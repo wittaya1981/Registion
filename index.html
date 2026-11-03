@@ -17,7 +17,7 @@
   .nav a.on{background:#6366f1;color:#fff}
   select,button{font:inherit;padding:10px;border:2px solid #c7c2f5;border-radius:12px;background:#fff}
   select{width:100%}
-  button.main{background:linear-gradient(135deg,#6366f1,#ec4899);color:#fff;border:0;padding:10px 24px;font-weight:600}
+  button.main{background:linear-gradient(135deg,#6366f1,#ec4899);color:#fff;border:0;padding:10px 24px;font-weight:600;cursor:pointer}
   .cat{background:#fff;border-radius:16px;margin-top:14px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.06)}
   .cat h3{margin:0;padding:10px 12px;color:#fff;font-size:.98rem;display:flex;justify-content:space-between}
   .cat h3 span{background:rgba(255,255,255,.3);border-radius:10px;padding:0 8px;font-size:.8rem}
@@ -26,7 +26,8 @@
   label.it input{width:22px;height:22px;flex:none;accent-color:#10b981}
   .tg{display:inline-block;margin-left:6px;padding:0 8px;border-radius:10px;font-size:.75rem;background:#e0e7ff;color:#4338ca}
   .tg.t{background:#fce7f3;color:#be185d}
-  .bar{position:sticky;bottom:8px;background:#fff;border-radius:16px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;margin-top:14px;box-shadow:0 4px 16px rgba(99,102,241,.3)}
+  /* เพิ่ม z-index:999 ให้แถบปุ่มลอยอยู่ชั้นบนสุดเสมอ เพื่อไม่ให้มีเลเยอร์อื่นมาบัง */
+  .bar{position:sticky;bottom:8px;z-index:999;background:#fff;border-radius:16px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;margin-top:14px;box-shadow:0 4px 16px rgba(99,102,241,.3)}
   .bar b{color:#10b981;font-size:1.3rem}
   table{width:100%;border-collapse:collapse;font-size:.9rem;margin-top:10px;background:#fff;border-radius:12px;overflow:hidden}
   th,td{padding:8px;text-align:left;border-bottom:1px solid #eee}
@@ -132,7 +133,6 @@ const CATS=[
 const ACTS=[];
 CATS.forEach(([c,list],ci)=>list.forEach((x,i)=>ACTS.push({code:`${ci+1}-${i+1}`,cat:c,name:x.n,type:x.t})));
 
-// แก้ไข Header ให้รองรับ Supabase Publishable Key
 const H={
   "apikey": SUPABASE_KEY,
   "Authorization": "Bearer " + SUPABASE_KEY,
@@ -172,7 +172,6 @@ async function loadForm(){
   }catch(e){msg("โหลดไม่สำเร็จ: "+e.message)}
 }
 
-// ปรับปรุงฟังก์ชันบันทึกข้อมูลพร้อมระบุ Prefer header สำหรับ Upsert
 async function saveAll(){
   const s = $("s1").value; 
   if(!s) return;
@@ -196,28 +195,4 @@ async function saveAll(){
     }
     saved = {}; 
     up.forEach(x => saved[x.activity_code] = 1);
-    msg("บันทึกแล้ว " + up.length + " กิจกรรม");
-  } catch(e) {
-    msg("บันทึกไม่สำเร็จ: " + e.message);
-  }
-}
-
-async function loadSummary(){
-  const s=$("s2").value;msg("กำลังโหลด...");
-  try{
-    const rows=await api("registrations?select=school,activity_code,category,activity_name,type"+(s?"&school=eq."+encodeURIComponent(s):""));
-    let h="";
-    if(!s){
-      const n={};SCHOOLS.forEach(x=>n[x]=0);rows.forEach(r=>n[r.school]=(n[r.school]||0)+1);
-      h=`<div class="big"><div><b>${rows.length}</b>การสมัครทั้งหมด</div><div><b>${Object.values(n).filter(v=>v).length}/${SCHOOLS.length}</b>โรงเรียนที่สมัครแล้ว</div></div><table><tr><th>โรงเรียน</th><th>กิจกรรมที่สมัคร</th></tr>`+Object.entries(n).map(([k,v])=>`<tr><td>${esc(k)}</td><td>${v}</td></tr>`).join("")+`<tr><th>รวม</th><th>${rows.length}</th></tr></table>`;
-    }else{
-      rows.sort((a,b)=>a.activity_code.localeCompare(b.activity_code,undefined,{numeric:true}));
-      h=`<div class="big"><div><b>${rows.length}</b>${esc(s)}</div><div><b>${ACTS.length-rows.length}</b>ยังไม่สมัคร</div></div>`;
-      if(rows.length)h+=`<table><tr><th>#</th><th>หมวด</th><th>กิจกรรม</th><th>ประเภท</th></tr>`+rows.map((r,i)=>`<tr><td>${i+1}</td><td>${esc(r.category)}</td><td>${esc(r.activity_name)}</td><td>${esc(r.type)}</td></tr>`).join("")+`</table><p><button onclick="window.print()">พิมพ์</button></p>`;
-    }
-    $("sum").innerHTML=h;msg("");
-  }catch(e){msg("โหลดไม่สำเร็จ: "+e.message)}
-}
-</script>
-</body>
-</html>
+    msg("บันทึกแล้ว
