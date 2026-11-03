@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>สมัครกิจกรรมศิลปหัตถกรรมนักเรียน ครั้งที่ 74</title>
+<style>
+  :root{--c0:#6366f1;--c1:#ec4899;--c2:#f59e0b;--c3:#10b981;--c4:#0ea5e9;--c5:#8b5cf6;--c6:#ef4444;--c7:#14b8a6}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Sarabun","Noto Sans Thai",system-ui,sans-serif;background:#f3f0ff;color:#2a2a3c;line-height:1.5}
+  header{background:linear-gradient(135deg,#6366f1,#ec4899 60%,#f59e0b);color:#fff;text-align:center;padding:18px 12px 24px;border-radius:0 0 24px 24px}
+  header h1{font-size:1.15rem;margin:0}
+  header p{margin:4px 0 0;font-size:.85rem;opacity:.9}
+  .wrap{max-width:760px;margin:0 auto;padding:12px}
+  .nav{display:flex;gap:8px;margin:-18px 0 12px;padding:0 12px;max-width:760px;margin-left:auto;margin-right:auto}
+  .nav a{flex:1;text-align:center;padding:10px;border-radius:12px;background:#fff;color:#6366f1;cursor:pointer;font-weight:600;box-shadow:0 2px 8px rgba(99,102,241,.2)}
+  .nav a.on{background:#6366f1;color:#fff}
+  select,button{font:inherit;padding:10px;border:2px solid #c7c2f5;border-radius:12px;background:#fff}
+  select{width:100%}
+  button.main{background:linear-gradient(135deg,#6366f1,#ec4899);color:#fff;border:0;padding:10px 24px;font-weight:600}
+  .cat{background:#fff;border-radius:16px;margin-top:14px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+  .cat h3{margin:0;padding:10px 12px;color:#fff;font-size:.98rem;display:flex;justify-content:space-between}
+  .cat h3 span{background:rgba(255,255,255,.3);border-radius:10px;padding:0 8px;font-size:.8rem}
+  label.it{display:flex;gap:10px;padding:10px 12px;border-bottom:1px solid #f0eefc;cursor:pointer;font-size:.92rem}
+  label.it:has(input:checked){background:#ecfdf5}
+  label.it input{width:22px;height:22px;flex:none;accent-color:#10b981}
+  .tg{display:inline-block;margin-left:6px;padding:0 8px;border-radius:10px;font-size:.75rem;background:#e0e7ff;color:#4338ca}
+  .tg.t{background:#fce7f3;color:#be185d}
+  .bar{position:sticky;bottom:8px;background:#fff;border-radius:16px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;margin-top:14px;box-shadow:0 4px 16px rgba(99,102,241,.3)}
+  .bar b{color:#10b981;font-size:1.3rem}
+  table{width:100%;border-collapse:collapse;font-size:.9rem;margin-top:10px;background:#fff;border-radius:12px;overflow:hidden}
+  th,td{padding:8px;text-align:left;border-bottom:1px solid #eee}
+  th{background:#6366f1;color:#fff}
+  tr:nth-child(even) td{background:#faf8ff}
+  .big{display:flex;gap:10px;margin-top:10px}
+  .big div{flex:1;border-radius:14px;padding:12px;text-align:center;color:#fff;background:linear-gradient(135deg,#10b981,#0ea5e9)}
+  .big div:nth-child(2){background:linear-gradient(135deg,#f59e0b,#ef4444)}
+  .big b{display:block;font-size:1.6rem}
+  #msg{text-align:center;color:#6366f1;min-height:1.4em;font-weight:600}
+  .hide{display:none}
+  @media print{.nav,select,.bar,header{display:none}}
+</style>
+</head>
+<body>
+<header><h1>งานศิลปหัตถกรรมนักเรียน ครั้งที่ 74</h1><p>ปีการศึกษา 2569 · ระบบสมัครกิจกรรมการแข่งขัน</p></header>
+<div class="nav"><a id="n1" class="on" onclick="tab(1)">สมัครกิจกรรม</a><a id="n2" onclick="tab(2)">สรุป</a></div>
+<div class="wrap">
+  <div id="msg"></div>
+
+  <div id="p1">
+    <select id="s1" onchange="loadForm()"></select>
+    <div id="list"></div>
+    <div id="bar" class="bar hide"><span>เลือกแล้ว <b id="cnt">0</b> กิจกรรม</span><button class="main" onclick="saveAll()">บันทึก</button></div>
+  </div>
+
+  <div id="p2" class="hide">
+    <select id="s2" onchange="loadSummary()"></select>
+    <div id="sum"></div>
+  </div>
+</div>
+
+<script>
+/* ===== ตั้งค่า Supabase ===== */
+const SUPABASE_URL = "https://YOUR-PROJECT.supabase.co";
+const SUPABASE_KEY = "YOUR-ANON-KEY";
+
+/*
+  SQL สร้างตาราง (รันใน Supabase > SQL Editor):
+
+  create table registrations (
+    id bigint generated always as identity primary key,
+    school text not null,
+    activity_code text not null,
+    category text,
+    activity_name text,
+    type text,
+    students text,
+    teacher text,
+    created_at timestamptz default now(),
+    unique (school, activity_code)
+  );
+  alter table registrations disable row level security;
+*/
+
+const SCHOOLS = ["ร.ร.ม่วงสามสิบ (อำนวยปัญญา ฯ)","ร.ร.บ้านโพนเมือง","ร.ร.บ้านดอนแดง","ร.ร.บ้านวังมนเดือยไก่","ร.ร.บ้านทุ่งใต้","ร.ร.บ้านเหล่าข้าวดอนก่อ","ร.ร.บ้านตำแย","ร.ร.บ้านเทพา","ร.ร.บ้านหนองดูนโนนค้อหนองหัวลิง","ร.ร.บ้านหนองขอน"];
+
+/* ===== รายการกิจกรรม ===== */
+const L3=["ป.1-ป.3","ป.4-ป.6","ม.1-ม.3"], L2=["ป.1-ป.6","ม.1-ม.3"], U=["ป.4-ป.6","ม.1-ม.3"], P="ป.1-ป.6", M="ม.1-ม.3";
+const a=(n,lv,t)=>lv.map(l=>({n:n+" "+l,t}));
+const dis=(n,kinds,lv,t)=>kinds.flatMap(k=>lv.map(l=>({n:`${n} ประเภทนักเรียนที่มี${k} ${l}`,t})));
+const D=(t,...x)=>x; 
+const CATS=[
+ ["ภาษาไทย",[...a("คัดลายมือสื่อภาษาไทย",L3,"เดี่ยว"),...a("ท่องอาขยานทำนองเสนาะ",L3,"เดี่ยว")]],
+ ["คณิตศาสตร์",[...a("การแข่งขันอัจฉริยภาพทางคณิตศาสตร์",L3,"เดี่ยว"),...a("การแข่งขันคิดเลขเร็ว",L3,"เดี่ยว"),...a("การแข่งขันเอแม็ท (A-MATH)",U,"ทีม 2 คน")]],
+ ["วิทยาศาสตร์และเทคโนโลยี",[...a("การประกวดผลงานสิ่งประดิษฐ์ทางวิทยาศาสตร์",L2,"ทีม 2 คน"),...a("การแข่งขันอัจฉริยภาพทางวิทยาศาสตร์",U,"ทีม 3 คน")]],
+ ["ภาพยนตร์สั้น",a("การประกวดภาพยนตร์สั้น",L2,"ทีม 5 คน")],
+ ["สุขศึกษาและพลศึกษา",[...a("การแข่งขันคีตศิลป์มวยไทย",L2,"ทีม 10 คน"),...a("การแข่งขันแอโรบิก",L2,"ทีม 10 คน"),...a("การแข่งขันคีตะมวยไทย",L2,"ทีม 10 คน")]],
+ ["ศิลปะ ทัศนศิลป์",[...a("การแข่งขันจิตรกรรมเทคนิคผสม Mixed Media",L3,"เดี่ยว"),...a("การแข่งขันการวาดภาพระบายสี",L3,"เดี่ยว"),...a("การแข่งขันเขียนภาพไทยประเพณี",[M],"เดี่ยว"),...a("การแข่งขันการออกแบบร่าง (SKETCH DESIGN)",U,"เดี่ยว"),...a("การแข่งขันวาดเส้น (DRAWING)",[M],"เดี่ยว"),...a("การแข่งขันประติมากรรม",L3,"ทีม 3 คน")]],
+ ["ศิลปะ ดนตรี",[
+   ...a("การแข่งขันขับร้องเพลงไทยหมู่",L2,"ทีม 14 คน"),
+   ...a("การแข่งขันวงดนตรีร่วมสมัย (Contemporary Ensemble)",["ป.1-ม.3"],"ทีม 25 คน"),
+   ...a("การแข่งขันวงดนตรีสากลเครื่องผสม (Various Ensemble)",["ป.1-ม.3"],"ทีม 16 คน"),
+   ...a("การแข่งขันเดี่ยวระนาดเอก",[M],"เดี่ยว"),
+   ...a("การแข่งขันเดี่ยวระนาดทุ้ม",[P],"เดี่ยว"),
+   ...a("การแข่งขันเดี่ยวฆ้องวงใหญ่",L2,"เดี่ยว"),
+   ...a("การแข่งขันเดี่ยวฆ้องวงเล็ก",L2,"เดี่ยว"),
+   ...a("การแข่งขันเดี่ยวซอด้วง",L2,"เดี่ยว"),
+   ...a("การแข่งขันเดี่ยวซออู้",L2,"เดี่ยว"),
+   ...a("การแข่งขันเดี่ยวจะเข้",L2,"เดี่ยว"),
+   ...a("การแข่งขันเดี่ยวขิม 7 หย่อง",L2,"เดี่ยว"),
+   ...a("การแข่งขันเดี่ยวขลุ่ยเพียงออ",L2,"เดี่ยว"),
+   ...a("การแข่งขันขับร้องเพลงไทยหมู่ (เดี่ยว)",L2,"เดี่ยว"),
+   ...a("การแข่งขันวงเครื่องสายผสมขิม",L2,"ทีม 9 คน"),
+   ...a("การแข่งขันวงเครื่องสายผสมปี่พาทย์ไม้นวม",L2,"ทีม 15 คน"),
+   ...a("การแข่งขันวงปี่พาทย์ไม้แข็ง",L2,"ทีม 12 คน"),
+   ...a("การแข่งขันขับร้องเพลงไทยลูกทุ่ง ประเภทชาย",L2,"เดี่ยว"),
+   ...a("การแข่งขันขับร้องเพลงไทยลูกทุ่ง ประเภทหญิง",L2,"เดี่ยว"),
+   ...a("การแข่งขันขับร้องเพลงไทยลูกกรุง ประเภทชาย",L2,"เดี่ยว"),
+   ...a("การแข่งขันขับร้องเพลงไทยลูกกรุง ประเภทหญิง",L2,"เดี่ยว"),
+   ...a("การแข่งขันวงดุริยางค์เครื่องลม (Wind)",["ป.1-ม.3"],"ทีม 30 คน"),
+   ...a("การแข่งขันขับร้องประสานเสียง",["ป.1-ม.3"],"ทีม 40 คน")]],
+ ["ศิลปะ นาฏศิลป์",[...a("การแข่งขันรำหรือระบำมาตรฐาน",L2,"ทีม 10 คน"),...a("การแข่งขันนาฏศิลป์ไทยอนุรักษ์",L2,"ทีม 10 คน"),...a("การแข่งขันนาฏศิลป์ไทยสร้างสรรค์",L2,"ทีม 16 คน"),...a("การแข่งขันรำวงมาตรฐาน",L2,"ทีม 10 คน")]],
+ ["ภาษาต่างประเทศ",[...a("การแข่งขันพูดภาษาอังกฤษ (Impromptu Speech)",U,"เดี่ยว"),...a("การแข่งขันการเล่านิทาน (Story Telling)",U,"เดี่ยว")]],
+ ["หนังสือเล่มเล็ก",a("การแข่งขันการจัดทำหนังสือเล่มเล็ก",U,"ทีม 3 คน")],
+ ["กิจกรรมพัฒนาผู้เรียน",[...a("การแข่งขันผูกเงื่อน เดินทรงตัวและโยนบอล",["ป.1-ป.3"],"ทีม 6 คน"),...a("การแข่งขันการใช้เข็มทิศและการคาดคะเนและสะกดรอย",["ป.4-ป.6"],"ทีม 6 คน"),...a("การจัดการค่ายพักแรม",[M],"ทีม 8 คน"),...a("การแข่งขันเต้นประกอบเพลง Cover Dance Contest (ลูกเสือต้านภัยยาเสพติด)",L3,"ทีม 10 คน")]],
+ ["คอมพิวเตอร์",[...a("การแข่งขันการสร้างการ์ตูนด้วยโปรแกรมคอมพิวเตอร์กราฟิก",["ป.1-ป.3"],"ทีม 2 คน"),...a("การแข่งขันการสร้างการ์ตูนเรื่องสั้น (Comic Strip)",U,"ทีม 2 คน"),...a("การแข่งขันการออกแบบสิ่งของเครื่องใช้ด้วยโปรแกรมคอมพิวเตอร์",[M],"ทีม 2 คน")]],
+ ["หุ่นยนต์",a("การแข่งขันหุ่นยนต์ระดับกลาง",L2,"ทีม 3 คน")],
+ ["การงานอาชีพ",[...a("การแข่งขันประดิษฐ์ของใช้จากวัสดุธรรมชาติในท้องถิ่น",U,"ทีม 3 คน"),...a("การแข่งขันจักสานไม้ไผ่",U,"ทีม 3 คน"),...a("การแข่งขันประดิษฐ์พานพุ่มสักการะ",["ป.4-ป.6"],"ทีม 6 คน"),...a("การแข่งขันประดิษฐ์กระทงดอกไม้ธูปเทียนแพ",[M],"ทีม 6 คน"),...a("การประกวดโครงงานอาชีพ",U,"ทีม 3 คน"),...a("การแข่งขันจัดสวนถาดแบบแห้ง",U,"ทีม 3 คน"),...a("การประกวดแปรรูปอาหาร",U,"ทีม 3 คน"),...a("การแข่งขันทำน้ำพริก ผักสด เครื่องเคียง",U,"ทีม 3 คน"),...a("การแข่งขันทำอาหารคาวหวานเพื่อสุขภาพเชิงธุรกิจ",U,"ทีม 3 คน"),...a("การแข่งขันแกะสลักผักและผลไม้",U,"ทีม 3 คน")]],
+ ["ปฐมวัย",[{n:"การปั้นดินน้ำมัน ปฐมวัย",t:"ทีม 3 คน"},{n:"การสร้างภาพด้วยการฉีก ตัด ปะ กระดาษ ปฐมวัย",t:"ทีม 3 คน"}]],
+ ["เรียนรวม ภาษาไทย",dis("การแข่งขันการจัดทำหนังสือเล่มเล็ก",["ความบกพร่องทางการเรียนรู้"],U,"ทีม 3 คน")],
+ ["เรียนรวม การงานอาชีพ",[
+   ...dis("การแข่งขันการทำอาหาร",["ความบกพร่องทางสติปัญญา","ความบกพร่องทางการเรียนรู้"],[P],"ทีม 3 คน"),
+   ...dis("การแข่งขันการประดิษฐ์งานใบตองประเภทบายศรีปากชาม",["ความบกพร่องทางสติปัญญา","ความบกพร่องทางการเรียนรู้"],[P],"ทีม 3 คน"),
+   ...dis("การแข่งขันประดิษฐ์ของใช้จากเศษวัสดุเหลือใช้",["ความบกพร่องทางสติปัญญา","ความบกพร่องทางการเรียนรู้"],[P],"ทีม 3 คน"),
+   ...dis("การแข่งขันการประดิษฐ์ของเล่นจากเศษวัสดุเหลือใช้",["ความบกพร่องทางสติปัญญา","ความบกพร่องทางการเรียนรู้"],[P],"ทีม 3 คน"),
+   ...dis("การแข่งขันการร้อยมาลัยดอกไม้สด",["ความบกพร่องทางสติปัญญา","ความบกพร่องทางการเรียนรู้"],[P],"ทีม 3 คน"),
+   ...dis("การแข่งขันการจัดสวนถาดแบบชื้น",["ความบกพร่องทางการเรียนรู้"],[P],"ทีม 3 คน"),
+   ...dis("การแข่งขันการจัดสวนถาดแบบแห้ง",["ความบกพร่องทางการเรียนรู้"],[P],"ทีม 3 คน")]],
+ ["เรียนรวม ศิลปะ",[
+   ...dis("การแข่งขันการวาดภาพระบายสี",["ความบกพร่องทางการได้ยิน","ความบกพร่องทางสติปัญญา","ความบกพร่องทางร่างกาย","ความบกพร่องทางการเรียนรู้"],L2,"เดี่ยว"),
+   ...a("การแข่งขันการวาดภาพระบายสี ประเภทนักเรียนออทิสติก",L2,"เดี่ยว"),
+   ...dis("การประกวดการขับร้องเพลงไทยลูกทุ่ง",["ความบกพร่องทางการเห็น","ความบกพร่องทางสติปัญญา","ความบกพร่องทางร่างกาย","ความบกพร่องทางการเรียนรู้"],L2,"เดี่ยว"),
+   ...a("การประกวดการขับร้องเพลงไทยลูกทุ่ง ประเภทนักเรียนออทิสติก",L2,"เดี่ยว"),
+   {n:"การแข่งขันการเต้นหางเครื่องประกอบเพลง ประเภทนักเรียนที่มีความบกพร่องทางการเรียนรู้ ป.1-ป.6",t:"ทีม 7 คน"}]],
+ ["ศิลปวัฒนธรรมอีสาน",[...a("การแข่งขันเดี่ยวโปงลาง",L2,"เดี่ยว"),...a("การแข่งขันเดี่ยวโหวด",L2,"เดี่ยว"),...a("การแข่งขันเดี่ยวพิณ",L2,"เดี่ยว"),...a("การแข่งขันเดี่ยวแคน",L2,"เดี่ยว"),...a("การแข่งขันวงดนตรีพื้นเมืองอีสาน (โปงลาง)",L2,"ทีม 30 คน")]],
+ ["สังคมศึกษา ศาสนา วัฒนธรรม",[...a("การแข่งขันโครงงานคุณธรรม",L3,"ทีม 5 คน"),...a("กิจกรรมมารยาทไทย",L3,"ทีม 2 คน")]],
+ ["นักบินน้อย",[{n:"การแข่งขันเครื่องร่อนแบบเดินตาม ป.1-ป.3",t:"ทีม 2 คน"},{n:"การแข่งขันเครื่องร่อน ประเภทร่อนนานปล่อยด้วยมือ ป.4-ป.6",t:"ทีม 2 คน"},{n:"การแข่งขันเครื่องบินพลังยาง ประเภทบินนานปล่อยอิสระ ม.1-ม.3",t:"ทีม 2 คน"}]]
+];
+// กำหนดรหัสกิจกรรม
+const ACTS=[];
+CATS.forEach(([c,list],ci)=>list.forEach((x,i)=>ACTS.push({code:`${ci+1}-${i+1}`,cat:c,name:x.n,type:x.t})));
+
+
+const H={apikey:SUPABASE_KEY,Authorization:"Bearer "+SUPABASE_KEY,"Content-Type":"application/json"};
+const api=(p,o={})=>fetch(SUPABASE_URL+"/rest/v1/"+p,{headers:H,...o}).then(async r=>{if(!r.ok)throw new Error(await r.text());const t=await r.text();return t?JSON.parse(t):[]});
+const $=id=>document.getElementById(id), msg=t=>$("msg").textContent=t||"";
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+$("s1").innerHTML='<option value="">-- เลือกโรงเรียน --</option>'+SCHOOLS.map(s=>`<option>${esc(s)}</option>`).join("");
+$("s2").innerHTML='<option value="">ทุกโรงเรียน</option>'+SCHOOLS.map(s=>`<option>${esc(s)}</option>`).join("");
+
+function tab(n){
+  $("p1").classList.toggle("hide",n!==1);$("p2").classList.toggle("hide",n!==2);
+  $("n1").classList.toggle("on",n===1);$("n2").classList.toggle("on",n===2);
+  msg(""); if(n===2) loadSummary();
+}
+function count(){$("cnt").textContent=document.querySelectorAll("#list input:checked").length}
+
+let saved={};
+async function loadForm(){
+  const s=$("s1").value;
+  if(!s){$("list").innerHTML="";$("bar").classList.add("hide");return}
+  msg("กำลังโหลด...");
+  try{
+    const rows=await api("registrations?select=activity_code&school=eq."+encodeURIComponent(s));
+    saved={};rows.forEach(r=>saved[r.activity_code]=1);
+    let h="";
+    CATS.forEach(([c],ci)=>{
+      const it=ACTS.filter(x=>x.cat===c);
+      h+=`<div class="cat"><h3 style="background:var(--c${ci%8})">${esc(c)}<span>${it.length}</span></h3>`;
+      it.forEach(x=>{h+=`<label class="it"><input type="checkbox" value="${x.code}" ${saved[x.code]?"checked":""} onchange="count()"><span>${esc(x.name)}<span class="tg ${x.type==="เดี่ยว"?"":"t"}">${esc(x.type)}</span></span></label>`});
+      h+="</div>";
+    });
+    $("list").innerHTML=h;$("bar").classList.remove("hide");count();msg("");
+  }catch(e){msg("โหลดไม่สำเร็จ: "+e.message)}
+}
+async function saveAll(){
+  const s=$("s1").value;if(!s)return;
+  const on=new Set([...document.querySelectorAll("#list input:checked")].map(i=>i.value));
+  const up=ACTS.filter(x=>on.has(x.code)).map(x=>({school:s,activity_code:x.code,category:x.cat,activity_name:x.name,type:x.type}));
+  const del=Object.keys(saved).filter(c=>!on.has(c));
+  msg("กำลังบันทึก...");
+  try{
+    if(up.length)await api("registrations?on_conflict=school,activity_code",{method:"POST",headers:{...H,Prefer:"resolution=merge-duplicates"},body:JSON.stringify(up)});
+    for(const c of del)await api(`registrations?school=eq.${encodeURIComponent(s)}&activity_code=eq.${c}`,{method:"DELETE"});
+    saved={};up.forEach(x=>saved[x.activity_code]=1);
+    msg("บันทึกแล้ว "+up.length+" กิจกรรม");
+  }catch(e){msg("บันทึกไม่สำเร็จ: "+e.message)}
+}
+
+async function loadSummary(){
+  const s=$("s2").value;msg("กำลังโหลด...");
+  try{
+    const rows=await api("registrations?select=school,activity_code,category,activity_name,type"+(s?"&school=eq."+encodeURIComponent(s):""));
+    let h="";
+    if(!s){
+      const n={};SCHOOLS.forEach(x=>n[x]=0);rows.forEach(r=>n[r.school]=(n[r.school]||0)+1);
+      h=`<div class="big"><div><b>${rows.length}</b>การสมัครทั้งหมด</div><div><b>${Object.values(n).filter(v=>v).length}/${SCHOOLS.length}</b>โรงเรียนที่สมัครแล้ว</div></div><table><tr><th>โรงเรียน</th><th>กิจกรรมที่สมัคร</th></tr>`+Object.entries(n).map(([k,v])=>`<tr><td>${esc(k)}</td><td>${v}</td></tr>`).join("")+`<tr><th>รวม</th><th>${rows.length}</th></tr></table>`;
+    }else{
+      rows.sort((a,b)=>a.activity_code.localeCompare(b.activity_code,undefined,{numeric:true}));
+      h=`<div class="big"><div><b>${rows.length}</b>${esc(s)}</div><div><b>${ACTS.length-rows.length}</b>ยังไม่สมัคร</div></div>`;
+      if(rows.length)h+=`<table><tr><th>#</th><th>หมวด</th><th>กิจกรรม</th><th>ประเภท</th></tr>`+rows.map((r,i)=>`<tr><td>${i+1}</td><td>${esc(r.category)}</td><td>${esc(r.activity_name)}</td><td>${esc(r.type)}</td></tr>`).join("")+`</table><p><button onclick="window.print()">พิมพ์</button></p>`;
+    }
+    $("sum").innerHTML=h;msg("");
+  }catch(e){msg("โหลดไม่สำเร็จ: "+e.message)}
+}
+</script>
+</body>
+</html>
