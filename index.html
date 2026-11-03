@@ -64,24 +64,6 @@
 const SUPABASE_URL = "https://ilqhwnnedwcejoukhpgb.supabase.co";
 const SUPABASE_KEY = "sb_publishable_JcEAj8jqW1wp2CX4_VPiFQ_XYttcTFr";
 
-/*
-  SQL สร้างตาราง (รันใน Supabase > SQL Editor):
-
-  create table registrations (
-    id bigint generated always as identity primary key,
-    school text not null,
-    activity_code text not null,
-    category text,
-    activity_name text,
-    type text,
-    students text,
-    teacher text,
-    created_at timestamptz default now(),
-    unique (school, activity_code)
-  );
-  alter table registrations disable row level security;
-*/
-
 const SCHOOLS = ["ร.ร.ม่วงสามสิบ (อำนวยปัญญา ฯ)","ร.ร.บ้านโพนเมือง","ร.ร.บ้านดอนแดง","ร.ร.บ้านวังมนเดือยไก่","ร.ร.บ้านทุ่งใต้","ร.ร.บ้านเหล่าข้าวดอนก่อ","ร.ร.บ้านตำแย","ร.ร.บ้านเทพา","ร.ร.บ้านหนองดูนโนนค้อหนองหัวลิง","ร.ร.บ้านหนองขอน"];
 
 /* ===== รายการกิจกรรม ===== */
@@ -150,8 +132,13 @@ const CATS=[
 const ACTS=[];
 CATS.forEach(([c,list],ci)=>list.forEach((x,i)=>ACTS.push({code:`${ci+1}-${i+1}`,cat:c,name:x.n,type:x.t})));
 
+// แก้ไข Header ให้รองรับ Supabase Publishable Key
+const H={
+  "apikey": SUPABASE_KEY,
+  "Authorization": "Bearer " + SUPABASE_KEY,
+  "Content-Type": "application/json"
+};
 
-const H={apikey:SUPABASE_KEY,Authorization:"Bearer "+SUPABASE_KEY,"Content-Type":"application/json"};
 const api=(p,o={})=>fetch(SUPABASE_URL+"/rest/v1/"+p,{headers:H,...o}).then(async r=>{if(!r.ok)throw new Error(await r.text());const t=await r.text();return t?JSON.parse(t):[]});
 const $=id=>document.getElementById(id), msg=t=>$("msg").textContent=t||"";
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -184,18 +171,35 @@ async function loadForm(){
     $("list").innerHTML=h;$("bar").classList.remove("hide");count();msg("");
   }catch(e){msg("โหลดไม่สำเร็จ: "+e.message)}
 }
+
+// ปรับปรุงฟังก์ชันบันทึกข้อมูลพร้อมระบุ Prefer header สำหรับ Upsert
 async function saveAll(){
-  const s=$("s1").value;if(!s)return;
-  const on=new Set([...document.querySelectorAll("#list input:checked")].map(i=>i.value));
-  const up=ACTS.filter(x=>on.has(x.code)).map(x=>({school:s,activity_code:x.code,category:x.cat,activity_name:x.name,type:x.type}));
-  const del=Object.keys(saved).filter(c=>!on.has(c));
+  const s = $("s1").value; 
+  if(!s) return;
+  const on = new Set([...document.querySelectorAll("#list input:checked")].map(i => i.value));
+  const up = ACTS.filter(x => on.has(x.code)).map(x => ({school: s, activity_code: x.code, category: x.cat, activity_name: x.name, type: x.type}));
+  const del = Object.keys(saved).filter(c => !on.has(c));
+  
   msg("กำลังบันทึก...");
-  try{
-    if(up.length)await api("registrations?on_conflict=school,activity_code",{method:"POST",headers:{...H,Prefer:"resolution=merge-duplicates"},body:JSON.stringify(up)});
-    for(const c of del)await api(`registrations?school=eq.${encodeURIComponent(s)}&activity_code=eq.${c}`,{method:"DELETE"});
-    saved={};up.forEach(x=>saved[x.activity_code]=1);
-    msg("บันทึกแล้ว "+up.length+" กิจกรรม");
-  }catch(e){msg("บันทึกไม่สำเร็จ: "+e.message)}
+  try {
+    if (up.length) {
+      await api("registrations?on_conflict=school,activity_code", {
+        method: "POST",
+        headers: { ...H, "Prefer": "resolution=merge-duplicates" },
+        body: JSON.stringify(up)
+      });
+    }
+    for (const c of del) {
+      await api(`registrations?school=eq.${encodeURIComponent(s)}&activity_code=eq.${c}`, {
+        method: "DELETE"
+      });
+    }
+    saved = {}; 
+    up.forEach(x => saved[x.activity_code] = 1);
+    msg("บันทึกแล้ว " + up.length + " กิจกรรม");
+  } catch(e) {
+    msg("บันทึกไม่สำเร็จ: " + e.message);
+  }
 }
 
 async function loadSummary(){
