@@ -7,7 +7,7 @@
 <style>
   :root{--c0:#6366f1;--c1:#ec4899;--c2:#f59e0b;--c3:#10b981;--c4:#0ea5e9;--c5:#8b5cf6;--c6:#ef4444;--c7:#14b8a6}
   *{box-sizing:border-box}
-  body{margin:0;font-family:"Sarabun","Noto Sans Thai",system-ui,sans-serif;background:#f3f0ff;color:#2a2a3c;line-height:1.5}
+  body{margin:0;font-family:"Sarabun","Noto Sans Thai",system-ui,sans-serif;background:#f3f0ff;color:#2a2a3c;line-height:1.5;padding-bottom:90px}
   header{background:linear-gradient(135deg,#6366f1,#ec4899 60%,#f59e0b);color:#fff;text-align:center;padding:18px 12px 24px;border-radius:0 0 24px 24px}
   header h1{font-size:1.15rem;margin:0}
   header p{margin:4px 0 0;font-size:.85rem;opacity:.9}
@@ -17,7 +17,18 @@
   .nav a.on{background:#6366f1;color:#fff}
   select,button{font:inherit;padding:10px;border:2px solid #c7c2f5;border-radius:12px;background:#fff}
   select{width:100%}
-  button.main{background:linear-gradient(135deg,#6366f1,#ec4899);color:#fff;border:0;padding:10px 24px;font-weight:600;cursor:pointer}
+  
+  /* ปรับแต่งปุ่มให้เรียบง่ายและคลิกได้ชัวร์ */
+  button.main{
+    background: linear-gradient(135deg,#6366f1,#ec4899);
+    color: #fff;
+    border: 0;
+    padding: 10px 24px;
+    font-weight: 600;
+    cursor: pointer;
+    pointer-events: auto;
+  }
+
   .cat{background:#fff;border-radius:16px;margin-top:14px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.06)}
   .cat h3{margin:0;padding:10px 12px;color:#fff;font-size:.98rem;display:flex;justify-content:space-between}
   .cat h3 span{background:rgba(255,255,255,.3);border-radius:10px;padding:0 8px;font-size:.8rem}
@@ -26,8 +37,27 @@
   label.it input{width:22px;height:22px;flex:none;accent-color:#10b981}
   .tg{display:inline-block;margin-left:6px;padding:0 8px;border-radius:10px;font-size:.75rem;background:#e0e7ff;color:#4338ca}
   .tg.t{background:#fce7f3;color:#be185d}
-  /* เพิ่ม z-index:999 ให้แถบปุ่มลอยอยู่ชั้นบนสุดเสมอ เพื่อไม่ให้มีเลเยอร์อื่นมาบัง */
-  .bar{position:sticky;bottom:8px;z-index:999;background:#fff;border-radius:16px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;margin-top:14px;box-shadow:0 4px 16px rgba(99,102,241,.3)}
+
+  /* ทำให้แถบด้านล่างเป็น Fixed ติดจอ ลอยอยู่ชั้นบนสุดด้วย z-index สูงสุด และเคลียร์ทุกอย่างที่อาจบล็อก */
+  .bar{
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    max-width: 760px;
+    margin: 0 auto;
+    background: #fff;
+    border-top: 2px solid #c7c2f5;
+    padding: 12px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 -4px 16px rgba(99,102,241,.2);
+    z-index: 99999;
+    pointer-events: auto;
+  }
+
   .bar b{color:#10b981;font-size:1.3rem}
   table{width:100%;border-collapse:collapse;font-size:.9rem;margin-top:10px;background:#fff;border-radius:12px;overflow:hidden}
   th,td{padding:8px;text-align:left;border-bottom:1px solid #eee}
@@ -37,8 +67,8 @@
   .big div{flex:1;border-radius:14px;padding:12px;text-align:center;color:#fff;background:linear-gradient(135deg,#10b981,#0ea5e9)}
   .big div:nth-child(2){background:linear-gradient(135deg,#f59e0b,#ef4444)}
   .big b{display:block;font-size:1.6rem}
-  #msg{text-align:center;color:#6366f1;min-height:1.4em;font-weight:600}
-  .hide{display:none}
+  #msg{text-align:center;color:#6366f1;min-height:1.4em;font-weight:600;margin: 10px 0;}
+  .hide{display:none !important;}
   @media print{.nav,select,.bar,header{display:none}}
 </style>
 </head>
@@ -50,14 +80,19 @@
 
   <div id="p1">
     <select id="s1" onchange="loadForm()"></select>
-    <div id="list"></div>
-    <div id="bar" class="bar hide"><span>เลือกแล้ว <b id="cnt">0</b> กิจกรรม</span><button class="main" onclick="saveAll()">บันทึก</button></div>
+    <div id="list" style="margin-bottom: 20px;"></div>
   </div>
 
   <div id="p2" class="hide">
     <select id="s2" onchange="loadSummary()"></select>
     <div id="sum"></div>
   </div>
+</div>
+
+<!-- แถบบันทึกแยกออกมาอยู่นอก wrap เพื่อความชัวร์ในการแสดงผล -->
+<div id="bar" class="bar hide">
+  <span>เลือกแล้ว <b id="cnt">0</b> กิจกรรม</span>
+  <button class="main" type="button" onclick="saveAll()">บันทึกข้อมูล</button>
 </div>
 
 <script>
@@ -171,28 +206,3 @@ async function loadForm(){
     $("list").innerHTML=h;$("bar").classList.remove("hide");count();msg("");
   }catch(e){msg("โหลดไม่สำเร็จ: "+e.message)}
 }
-
-async function saveAll(){
-  const s = $("s1").value; 
-  if(!s) return;
-  const on = new Set([...document.querySelectorAll("#list input:checked")].map(i => i.value));
-  const up = ACTS.filter(x => on.has(x.code)).map(x => ({school: s, activity_code: x.code, category: x.cat, activity_name: x.name, type: x.type}));
-  const del = Object.keys(saved).filter(c => !on.has(c));
-  
-  msg("กำลังบันทึก...");
-  try {
-    if (up.length) {
-      await api("registrations?on_conflict=school,activity_code", {
-        method: "POST",
-        headers: { ...H, "Prefer": "resolution=merge-duplicates" },
-        body: JSON.stringify(up)
-      });
-    }
-    for (const c of del) {
-      await api(`registrations?school=eq.${encodeURIComponent(s)}&activity_code=eq.${c}`, {
-        method: "DELETE"
-      });
-    }
-    saved = {}; 
-    up.forEach(x => saved[x.activity_code] = 1);
-    msg("บันทึกแล้ว
