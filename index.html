@@ -70,6 +70,11 @@
   #msg{text-align:center;color:#6366f1;min-height:1.4em;font-weight:600;margin: 10px 0;}
   .hide{display:none !important;}
   @media print{.nav,select,.bar,header{display:none}}
+
+  /* แสดงเคอร์เซอร์รูปมือและสถานะปุ่มอย่างชัดเจน */
+  button, .nav a, label.it, select { cursor: pointer !important; }
+  button.main:hover { filter: brightness(.94); }
+  button.main:disabled { opacity: .65; cursor: wait !important; }
 </style>
 </head>
 <body>
@@ -206,3 +211,107 @@ async function loadForm(){
     $("list").innerHTML=h;$("bar").classList.remove("hide");count();msg("");
   }catch(e){msg("โหลดไม่สำเร็จ: "+e.message)}
 }
+
+/* ===== บันทึกข้อมูลลง Supabase ===== */
+async function saveAll(){
+  const school = $("s1").value;
+  if(!school){ msg("กรุณาเลือกโรงเรียนก่อนบันทึก"); return; }
+
+  const button = document.querySelector('#bar button');
+  if(button) button.disabled = true;
+
+  const selected = new Set(
+    [...document.querySelectorAll('#list input[type="checkbox"]:checked')].map(input => input.value)
+  );
+  const toSave = ACTS
+    .filter(activity => selected.has(activity.code))
+    .map(activity => ({
+      school,
+      activity_code: activity.code,
+      category: activity.cat,
+      activity_name: activity.name,
+      type: activity.type
+    }));
+  const toDelete = Object.keys(saved).filter(code => !selected.has(code));
+
+  msg("กำลังบันทึกข้อมูล...");
+  try {
+    // เพิ่มหรือปรับปรุงรายการที่เลือก โดยอาศัย unique constraint school + activity_code
+    if(toSave.length){
+      await api("registrations?on_conflict=school,activity_code", {
+        method: "POST",
+        headers: { ...H, "Prefer": "resolution=merge-duplicates" },
+        body: JSON.stringify(toSave)
+      });
+    }
+
+    // ลบรายการที่เคยบันทึกไว้ แต่ผู้ใช้ยกเลิกการเลือก
+    for(const code of toDelete){
+      await api(
+        "registrations?school=eq." + encodeURIComponent(school) + "&activity_code=eq." + encodeURIComponent(code),
+        { method: "DELETE", headers: { ...H, "Prefer": "return=minimal" } }
+      );
+    }
+
+    saved = {};
+    toSave.forEach(item => { saved[item.activity_code] = 1; });
+    count();
+    msg(`บันทึกสำเร็จ ${toSave.length} กิจกรรม`);
+  } catch(error) {
+    console.error("Save error:", error);
+    msg("บันทึกไม่สำเร็จ: " + (error.message || "โปรดตรวจสอบการเชื่อมต่อและสิทธิ์ Supabase"));
+  } finally {
+    if(button) button.disabled = false;
+  }
+}
+
+/* ===== สรุปข้อมูลการสมัคร ===== */
+async function loadSummary(){
+  const school = $("s2").value;
+  $("sum").innerHTML = "";
+  msg("กำลังโหลดข้อมูลสรุป...");
+  try {
+    let endpoint = "registrations?select=school,category,activity_name,type&order=school.asc,category.asc";
+    if(school) endpoint += "&school=eq." + encodeURIComponent(school);
+    const rows = await api(endpoint);
+
+    const schoolSet = new Set(rows.map(row => row.school));
+    const categoryCounts = {};
+    rows.forEach(row => {
+      const key = row.category || "ไม่ระบุหมวดหมู่";
+      categoryCounts[key] = (categoryCounts[key] || 0) + 1;
+    });
+
+    let html = `<div class="big">
+      <div><b>${rows.length}</b>รายการสมัครทั้งหมด</div>
+      <div><b>${schoolSet.size}</b>โรงเรียนที่สมัคร</div>
+    </div>`;
+
+    if(!rows.length){
+      html += '<p style="text-align:center;background:#fff;padding:18px;border-radius:12px;margin-top:12px">ยังไม่มีข้อมูลการสมัคร</p>';
+    } else {
+      html += '<h3>สรุปตามหมวดหมู่</h3><table><thead><tr><th>หมวดหมู่</th><th>จำนวนกิจกรรม</th></tr></thead><tbody>';
+      Object.entries(categoryCounts).sort((a,b) => a[0].localeCompare(b[0], 'th')).forEach(([category,total]) => {
+        html += `<tr><td>${esc(category)}</td><td>${total}</td></tr>`;
+      });
+      html += '</tbody></table>';
+
+      html += '<h3>รายละเอียดการสมัคร</h3><table><thead><tr><th>โรงเรียน</th><th>กิจกรรม</th><th>ประเภท</th></tr></thead><tbody>';
+      rows.forEach(row => {
+        html += `<tr><td>${esc(row.school)}</td><td>${esc(row.activity_name)}</td><td>${esc(row.type)}</td></tr>`;
+      });
+      html += '</tbody></table>';
+    }
+    $("sum").innerHTML = html;
+    msg("");
+  } catch(error) {
+    console.error("Summary error:", error);
+    msg("โหลดสรุปไม่สำเร็จ: " + (error.message || "โปรดตรวจสอบการเชื่อมต่อ Supabase"));
+  }
+}
+
+// เริ่มต้นแสดงจำนวนกิจกรรมที่เลือก
+count();
+</script>
+</body>
+</html>
