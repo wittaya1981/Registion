@@ -69,6 +69,15 @@
   .big b{display:block;font-size:1.6rem}
   #msg{text-align:center;color:#6366f1;min-height:1.4em;font-weight:600;margin: 10px 0;}
   .hide{display:none !important;}
+  .nav a.admin{background:#fee2e2;color:#b91c1c}
+  .action-btn{width:100%;margin:8px 0;padding:12px;border:0;border-radius:12px;font-weight:700;cursor:pointer}
+  .danger{background:#dc2626;color:#fff}
+  .danger-outline{background:#fff;color:#b91c1c;border:2px solid #ef4444}
+  .activity-card{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:12px;margin:8px 0}
+  .empty-card{background:#fff1f2;border:1px solid #fca5a5;border-left:5px solid #dc2626;color:#991b1b;border-radius:10px;padding:11px 12px;margin:7px 0}
+  .section-title{margin:18px 0 8px}
+  .admin-panel{background:#fff;border:1px solid #fecaca;border-radius:14px;padding:14px;margin-top:12px}
+  .admin-note{font-size:.85rem;color:#7f1d1d;background:#fff1f2;padding:10px;border-radius:9px}
   @media print{.nav,select,.bar,header{display:none}}
 
   /* แสดงเคอร์เซอร์รูปมือและสถานะปุ่มอย่างชัดเจน */
@@ -79,7 +88,12 @@
 </head>
 <body>
 <header><h1>งานศิลปหัตถกรรมนักเรียน ครั้งที่ 74</h1><p>ปีการศึกษา 2569 · ระบบสมัครกิจกรรมการแข่งขัน</p></header>
-<div class="nav"><a id="n1" class="on" onclick="tab(1)">สมัครกิจกรรม</a><a id="n2" onclick="tab(2)">สรุป</a></div>
+<div class="nav">
+  <a id="n1" class="on" onclick="tab(1)">สมัครกิจกรรม</a>
+  <a id="n2" onclick="tab(2)">สรุปกิจกรรม</a>
+  <a id="n3" onclick="tab(3)">สรุปรายโรงเรียน</a>
+  <a id="n4" class="admin" onclick="openAdmin()">Admin</a>
+</div>
 <div class="wrap">
   <div id="msg"></div>
 
@@ -89,8 +103,28 @@
   </div>
 
   <div id="p2" class="hide">
+    <p>แสดงกิจกรรมทั้งหมดตามลำดับในหน้าสมัคร พร้อมรายชื่อโรงเรียนที่สมัคร</p>
     <select id="s2" onchange="loadSummary()"></select>
     <div id="sum"></div>
+  </div>
+
+  <div id="p3" class="hide">
+    <h3 class="section-title">สรุปรายโรงเรียน</h3>
+    <select id="s3" onchange="loadSchoolSummary()"><option value="">-- เลือกโรงเรียน --</option></select>
+    <div id="schoolSum"></div>
+  </div>
+
+  <div id="p4" class="hide">
+    <h3 class="section-title">หน้าแอดมินจัดการข้อมูล</h3>
+    <div class="admin-panel">
+      <p><b>ลบข้อมูลการสมัครของโรงเรียนที่เลือก</b></p>
+      <select id="adminSchool"><option value="">-- เลือกโรงเรียน --</option></select>
+      <button class="action-btn danger-outline" type="button" onclick="deleteSelectedSchool()">ลบข้อมูลทั้งหมดของโรงเรียนนี้</button>
+      <hr>
+      <p><b>ลบข้อมูลการสมัครทั้งหมดทุกโรงเรียน</b></p>
+      <button class="action-btn danger" type="button" onclick="deleteAllSchools()">ลบข้อมูลทุกโรงเรียนทั้งหมด</button>
+      <p class="admin-note">คำเตือน: การลบไม่สามารถย้อนกลับได้ โปรดตรวจสอบก่อนยืนยันทุกครั้ง</p>
+    </div>
   </div>
 </div>
 
@@ -186,10 +220,17 @@ const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&g
 $("s1").innerHTML='<option value="">-- เลือกโรงเรียน --</option>'+SCHOOLS.map(s=>`<option>${esc(s)}</option>`).join("");
 $("s2").innerHTML='<option value="">ทุกโรงเรียน</option>'+SCHOOLS.map(s=>`<option>${esc(s)}</option>`).join("");
 
+// เติมรายชื่อโรงเรียนในตัวเลือกหน้าสรุปรายโรงเรียนและหน้าแอดมิน
+const schoolOptions = SCHOOLS.map(s=>`<option value="${esc(s)}">${esc(s)}</option>`).join("");
+$("s3").innerHTML = '<option value="">-- เลือกโรงเรียน --</option>' + schoolOptions;
+$("adminSchool").innerHTML = '<option value="">-- เลือกโรงเรียน --</option>' + schoolOptions;
+
 function tab(n){
-  $("p1").classList.toggle("hide",n!==1);$("p2").classList.toggle("hide",n!==2);
-  $("n1").classList.toggle("on",n===1);$("n2").classList.toggle("on",n===2);
-  msg(""); if(n===2) loadSummary();
+  [1,2,3,4].forEach(i=>$("p"+i).classList.toggle("hide",n!==i));
+  [1,2,3].forEach(i=>$("n"+i).classList.toggle("on",n===i));
+  msg("");
+  if(n===2) loadSummary();
+  if(n===3 && $("s3").value) loadSchoolSummary();
 }
 function count(){$("cnt").textContent=document.querySelectorAll("#list input:checked").length}
 
@@ -265,74 +306,146 @@ async function saveAll(){
   }
 }
 
-/* ===== สรุปข้อมูลการสมัคร ===== */
+/* ===== สรุปกิจกรรมทั้งหมด แยกกิจกรรมที่ไม่มีผู้สมัครไว้ด้านล่าง ===== */
 async function loadSummary(){
   const school = $("s2").value;
   $("sum").innerHTML = "";
   msg("กำลังโหลดข้อมูลสรุป...");
   try {
-    // ดึงรหัสกิจกรรมมาด้วย เพื่อจัดเรียงตามลำดับกิจกรรมในแบบฟอร์ม
     let endpoint = "registrations?select=school,activity_code,category,activity_name,type&order=school.asc";
     if(school) endpoint += "&school=eq." + encodeURIComponent(school);
     const rows = await api(endpoint);
-
     const schoolSet = new Set(rows.map(row => row.school));
-    const categoryCounts = {};
+    const schoolsByActivity = new Map();
     rows.forEach(row => {
-      const key = row.category || "ไม่ระบุหมวดหมู่";
-      categoryCounts[key] = (categoryCounts[key] || 0) + 1;
+      if(!schoolsByActivity.has(row.activity_code)) schoolsByActivity.set(row.activity_code, []);
+      schoolsByActivity.get(row.activity_code).push(row.school);
     });
 
-    let html = `<div class="big">
-      <div><b>${rows.length}</b>รายการสมัครทั้งหมด</div>
-      <div><b>${schoolSet.size}</b>โรงเรียนที่สมัคร</div>
-    </div>`;
+    let html = `<div class="big"><div><b>${rows.length}</b>รายการสมัครทั้งหมด</div><div><b>${schoolSet.size}</b>โรงเรียนที่สมัคร</div></div>`;
+    html += '<h3 class="section-title">รายการกิจกรรมที่มีโรงเรียนสมัคร</h3>';
+    let currentCategory = "";
+    let openCategory = false;
+    let activeCount = 0;
+    const emptyActivities = [];
 
-    if(!rows.length){
-      html += '<p style="text-align:center;background:#fff;padding:18px;border-radius:12px;margin-top:12px">ยังไม่มีข้อมูลการสมัคร</p>';
-    } else {
-      html += '<h3>สรุปตามหมวดหมู่</h3><table><thead><tr><th>หมวดหมู่</th><th>จำนวนรายการสมัคร</th></tr></thead><tbody>';
-      Object.entries(categoryCounts).sort((a,b) => a[0].localeCompare(b[0], 'th')).forEach(([category,total]) => {
-        html += `<tr><td>${esc(category)}</td><td>${total}</td></tr>`;
-      });
-      html += '</tbody></table>';
+    ACTS.forEach(activity => {
+      const names = [...new Set(schoolsByActivity.get(activity.code) || [])];
+      if(names.length === 0){ emptyActivities.push(activity); return; }
+      if(activity.cat !== currentCategory){
+        if(openCategory) html += '</div>';
+        currentCategory = activity.cat;
+        openCategory = true;
+        html += `<div class="cat"><h3 style="background:var(--c${(CATS.findIndex(c=>c[0]===activity.cat))%8})">${esc(currentCategory)}</h3>`;
+      }
+      activeCount++;
+      html += `<div class="activity-card"><b>${esc(activity.name)}</b>
+        <div style="color:#64748b;font-size:.85rem;margin:4px 0 7px">${esc(activity.type)} · สมัคร ${names.length} โรงเรียน</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">${names.map(name=>`<span style="background:#eef2ff;color:#3730a3;border-radius:20px;padding:5px 10px;font-size:.88rem">${esc(name)}</span>`).join('')}</div>
+      </div>`;
+    });
+    if(openCategory) html += '</div>';
+    if(!activeCount) html += '<p>ยังไม่มีโรงเรียนสมัครกิจกรรมใด</p>';
 
-      // จัดกลุ่มโรงเรียนตามรหัสกิจกรรม และใช้ลำดับ ACTS ซึ่งตรงกับลำดับในหน้าสมัคร
-      const schoolsByActivity = new Map();
-      rows.forEach(row => {
-        if(!schoolsByActivity.has(row.activity_code)) schoolsByActivity.set(row.activity_code, []);
-        schoolsByActivity.get(row.activity_code).push(row.school);
-      });
-
-      html += '<h3>รายชื่อโรงเรียนที่สมัครแยกตามกิจกรรม</h3>';
-      let currentCategory = "";
-      let hasActivity = false;
-      ACTS.forEach(activity => {
-        const registeredSchools = schoolsByActivity.get(activity.code);
-        // ไม่แสดงกิจกรรมที่ไม่มีโรงเรียนสมัคร
-        if(!registeredSchools || registeredSchools.length === 0) return;
-
-        if(activity.cat !== currentCategory){
-          if(currentCategory) html += '</div>';
-          currentCategory = activity.cat;
-          html += `<div class="cat"><h3>${esc(currentCategory)}</h3>`;
+    html += `<h3 class="section-title" style="color:#b91c1c">รายการที่ไม่มีโรงเรียนรับสมัคร (${emptyActivities.length} รายการ)</h3>`;
+    if(emptyActivities.length){
+      html += '<div style="background:#fff;border-radius:14px;padding:10px;border:1px solid #fecaca">';
+      let emptyCat = "";
+      emptyActivities.forEach(activity=>{
+        if(activity.cat !== emptyCat){
+          emptyCat = activity.cat;
+          html += `<h4 style="color:#991b1b;margin:10px 0 5px">${esc(emptyCat)}</h4>`;
         }
-        hasActivity = true;
-        const uniqueSchools = [...new Set(registeredSchools)];
-        html += `<div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:12px;margin:8px 0">
-          <div style="font-weight:700;margin-bottom:6px">${esc(activity.name)}</div>
-          <div style="color:#64748b;font-size:.85rem;margin-bottom:7px">${esc(activity.type)} · สมัคร ${uniqueSchools.length} โรงเรียน</div>
-          <div style="display:flex;flex-wrap:wrap;gap:6px">${uniqueSchools.map(name => `<span style="display:inline-block;background:#eef2ff;color:#3730a3;border-radius:20px;padding:5px 10px;font-size:.88rem">${esc(name)}</span>`).join('')}</div>
-        </div>`;
+        html += `<div class="empty-card"><b>${esc(activity.name)}</b><div style="font-size:.85rem">${esc(activity.type)} · ไม่มีผู้สมัคร</div></div>`;
       });
-      if(currentCategory) html += '</div>';
-      if(!hasActivity) html += '<p>ยังไม่มีรายการกิจกรรมที่สมัคร</p>';
-    }
+      html += '</div>';
+    } else html += '<p style="color:#166534">ทุกกิจกรรมมีโรงเรียนสมัครแล้ว</p>';
+
     $("sum").innerHTML = html;
     msg("");
   } catch(error) {
     console.error("Summary error:", error);
     msg("โหลดสรุปไม่สำเร็จ: " + (error.message || "โปรดตรวจสอบการเชื่อมต่อ Supabase"));
+  }
+}
+
+/* ===== สรุปแยกรายโรงเรียน ===== */
+async function loadSchoolSummary(){
+  const school = $("s3").value;
+  $("schoolSum").innerHTML = "";
+  if(!school) return;
+  msg("กำลังโหลดข้อมูลของโรงเรียน...");
+  try{
+    const rows = await api("registrations?select=activity_code,category,activity_name,type&school=eq."+encodeURIComponent(school));
+    const codes = new Set(rows.map(r=>r.activity_code));
+    let html = `<div class="big"><div><b>${rows.length}</b>กิจกรรมที่สมัคร</div><div><b>${esc(school)}</b>โรงเรียน</div></div>`;
+    if(!rows.length){
+      html += '<p class="empty-card">โรงเรียนนี้ยังไม่ได้สมัครกิจกรรม</p>';
+    }else{
+      let currentCategory="", open=false;
+      ACTS.forEach(activity=>{
+        if(!codes.has(activity.code)) return;
+        if(activity.cat!==currentCategory){
+          if(open) html+='</div>';
+          currentCategory=activity.cat;open=true;
+          html+=`<div class="cat"><h3>${esc(currentCategory)}</h3>`;
+        }
+        html+=`<div class="activity-card"><b>${esc(activity.name)}</b><div style="color:#64748b;font-size:.85rem">${esc(activity.type)}</div></div>`;
+      });
+      if(open) html+='</div>';
+    }
+    $("schoolSum").innerHTML=html;
+    msg("");
+  }catch(error){
+    console.error(error);msg("โหลดข้อมูลโรงเรียนไม่สำเร็จ: "+(error.message||"ตรวจสอบ Supabase"));
+  }
+}
+
+/* ===== หน้าแอดมิน =====
+   รหัสผ่านใน JavaScript ฝั่งผู้ใช้เป็นเพียงการกั้นหน้าเบื้องต้น ไม่ใช่ระบบรักษาความปลอดภัยจริง */
+function openAdmin(){
+  const password = prompt("กรุณากรอกรหัสผ่านเพื่อเข้าสู่หน้า Admin");
+  if(password !== "m301"){
+    if(password !== null) alert("รหัสผ่านไม่ถูกต้อง");
+    return;
+  }
+  tab(4);
+  alert("เข้าสู่หน้า Admin แล้ว");
+}
+
+async function deleteSelectedSchool(){
+  const school=$("adminSchool").value;
+  if(!school){alert("กรุณาเลือกโรงเรียนก่อน");return;}
+  if(!confirm(`ยืนยันลบข้อมูลการสมัครทั้งหมดของ ${school} ใช่หรือไม่? การลบนี้ไม่สามารถย้อนกลับได้`)) return;
+  msg("กำลังลบข้อมูล...");
+  try{
+    await api("registrations?school=eq."+encodeURIComponent(school),{
+      method:"DELETE",headers:{...H,"Prefer":"return=minimal"}
+    });
+    alert("ลบข้อมูลการสมัครของโรงเรียนที่เลือกเรียบร้อยแล้ว");
+    if($("s1").value===school){saved={};$("list").innerHTML="";$("bar").classList.add("hide");}
+    if(!$("p2").classList.contains("hide")) loadSummary();
+    if(!$("p3").classList.contains("hide") && $("s3").value) loadSchoolSummary();
+    msg("ลบข้อมูลสำเร็จ");
+  }catch(error){
+    console.error(error);alert("ลบข้อมูลไม่สำเร็จ: "+(error.message||"ตรวจสอบสิทธิ์ Supabase"));msg("ลบข้อมูลไม่สำเร็จ");
+  }
+}
+
+async function deleteAllSchools(){
+  if(!confirm("ยืนยันลบข้อมูลการสมัครของทุกโรงเรียนทั้งหมดใช่หรือไม่?")) return;
+  if(!confirm("ยืนยันครั้งสุดท้าย: ข้อมูลการสมัครทุกโรงเรียนจะถูกลบและไม่สามารถกู้คืนได้")) return;
+  msg("กำลังลบข้อมูลทั้งหมด...");
+  try{
+    await api("registrations?school=not.is.null",{
+      method:"DELETE",headers:{...H,"Prefer":"return=minimal"}
+    });
+    alert("ลบข้อมูลการสมัครทุกโรงเรียนเรียบร้อยแล้ว");
+    saved={};$("list").innerHTML="";$("bar").classList.add("hide");
+    $("sum").innerHTML="";$("schoolSum").innerHTML="";
+    msg("ลบข้อมูลทั้งหมดสำเร็จ");
+  }catch(error){
+    console.error(error);alert("ลบข้อมูลทั้งหมดไม่สำเร็จ: "+(error.message||"ตรวจสอบสิทธิ์ Supabase"));msg("ลบข้อมูลไม่สำเร็จ");
   }
 }
 
