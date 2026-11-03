@@ -271,7 +271,8 @@ async function loadSummary(){
   $("sum").innerHTML = "";
   msg("กำลังโหลดข้อมูลสรุป...");
   try {
-    let endpoint = "registrations?select=school,category,activity_name,type&order=school.asc,category.asc";
+    // ดึงรหัสกิจกรรมมาด้วย เพื่อจัดเรียงตามลำดับกิจกรรมในแบบฟอร์ม
+    let endpoint = "registrations?select=school,activity_code,category,activity_name,type&order=school.asc";
     if(school) endpoint += "&school=eq." + encodeURIComponent(school);
     const rows = await api(endpoint);
 
@@ -290,17 +291,42 @@ async function loadSummary(){
     if(!rows.length){
       html += '<p style="text-align:center;background:#fff;padding:18px;border-radius:12px;margin-top:12px">ยังไม่มีข้อมูลการสมัคร</p>';
     } else {
-      html += '<h3>สรุปตามหมวดหมู่</h3><table><thead><tr><th>หมวดหมู่</th><th>จำนวนกิจกรรม</th></tr></thead><tbody>';
+      html += '<h3>สรุปตามหมวดหมู่</h3><table><thead><tr><th>หมวดหมู่</th><th>จำนวนรายการสมัคร</th></tr></thead><tbody>';
       Object.entries(categoryCounts).sort((a,b) => a[0].localeCompare(b[0], 'th')).forEach(([category,total]) => {
         html += `<tr><td>${esc(category)}</td><td>${total}</td></tr>`;
       });
       html += '</tbody></table>';
 
-      html += '<h3>รายละเอียดการสมัคร</h3><table><thead><tr><th>โรงเรียน</th><th>กิจกรรม</th><th>ประเภท</th></tr></thead><tbody>';
+      // จัดกลุ่มโรงเรียนตามรหัสกิจกรรม และใช้ลำดับ ACTS ซึ่งตรงกับลำดับในหน้าสมัคร
+      const schoolsByActivity = new Map();
       rows.forEach(row => {
-        html += `<tr><td>${esc(row.school)}</td><td>${esc(row.activity_name)}</td><td>${esc(row.type)}</td></tr>`;
+        if(!schoolsByActivity.has(row.activity_code)) schoolsByActivity.set(row.activity_code, []);
+        schoolsByActivity.get(row.activity_code).push(row.school);
       });
-      html += '</tbody></table>';
+
+      html += '<h3>รายชื่อโรงเรียนที่สมัครแยกตามกิจกรรม</h3>';
+      let currentCategory = "";
+      let hasActivity = false;
+      ACTS.forEach(activity => {
+        const registeredSchools = schoolsByActivity.get(activity.code);
+        // ไม่แสดงกิจกรรมที่ไม่มีโรงเรียนสมัคร
+        if(!registeredSchools || registeredSchools.length === 0) return;
+
+        if(activity.cat !== currentCategory){
+          if(currentCategory) html += '</div>';
+          currentCategory = activity.cat;
+          html += `<div class="cat"><h3>${esc(currentCategory)}</h3>`;
+        }
+        hasActivity = true;
+        const uniqueSchools = [...new Set(registeredSchools)];
+        html += `<div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:12px;margin:8px 0">
+          <div style="font-weight:700;margin-bottom:6px">${esc(activity.name)}</div>
+          <div style="color:#64748b;font-size:.85rem;margin-bottom:7px">${esc(activity.type)} · สมัคร ${uniqueSchools.length} โรงเรียน</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px">${uniqueSchools.map(name => `<span style="display:inline-block;background:#eef2ff;color:#3730a3;border-radius:20px;padding:5px 10px;font-size:.88rem">${esc(name)}</span>`).join('')}</div>
+        </div>`;
+      });
+      if(currentCategory) html += '</div>';
+      if(!hasActivity) html += '<p>ยังไม่มีรายการกิจกรรมที่สมัคร</p>';
     }
     $("sum").innerHTML = html;
     msg("");
