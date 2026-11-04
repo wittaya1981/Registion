@@ -1,527 +1,946 @@
+<!--
+  ============================================================
+  รหัสโรงเรียน (4 หลัก) - เก็บเป็นความลับ ส่งให้แต่ละโรงเรียนเท่านั้น
+  ถ้าแก้รหัส ต้องแก้ใน SCHOOLS (ส่วน JavaScript) ให้ตรงกันด้วย
+  ============================================================
+  1. บ้านสร้างมิ่ง                    = 4817
+  2. ชุมชนบ้านหนองแสง                 = 2593
+  3. บ้านนาขามดอนติ้ว                 = 7364
+  4. บ้านสวนงัว(ราษฎร์ใจดี)           = 1928
+  5. ราษฎร์ร่วมแรงรัฐ(กำจัดอุปถัมภ์)   = 6051
+  6. บ้านดุมใหญ่ดงยาง                 = 3846
+  7. บ้านบัวยาง                       = 8275
+  8. บ้านหนองเมืองน้อย                = 5149
+  9. บ้านท่าลาด                       = 9632
+-->
 <!DOCTYPE html>
 <html lang="th">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>สมัครกิจกรรมศิลปหัตถกรรมนักเรียน ครั้งที่ 74</title>
-<style>
-  :root{--c0:#6366f1;--c1:#ec4899;--c2:#f59e0b;--c3:#10b981;--c4:#0ea5e9;--c5:#8b5cf6;--c6:#ef4444;--c7:#14b8a6}
-  *{box-sizing:border-box}
-  body{margin:0;font-family:"Sarabun","Noto Sans Thai",system-ui,sans-serif;background:#f3f0ff;color:#2a2a3c;line-height:1.5;padding-bottom:90px}
-  header{background:linear-gradient(135deg,#6366f1,#ec4899 60%,#f59e0b);color:#fff;text-align:center;padding:18px 12px 24px;border-radius:0 0 24px 24px}
-  header h1{font-size:1.15rem;margin:0}
-  header p{margin:4px 0 0;font-size:.85rem;opacity:.9}
-  .wrap{max-width:760px;margin:0 auto;padding:12px}
-  .nav{display:flex;gap:8px;margin:-18px 0 12px;padding:0 12px;max-width:760px;margin-left:auto;margin-right:auto}
-  .nav a{flex:1;text-align:center;padding:10px;border-radius:12px;background:#fff;color:#6366f1;cursor:pointer;font-weight:600;box-shadow:0 2px 8px rgba(99,102,241,.2)}
-  .nav a.on{background:#6366f1;color:#fff}
-  select,button{font:inherit;padding:10px;border:2px solid #c7c2f5;border-radius:12px;background:#fff}
-  select{width:100%}
-  
-  /* ปรับแต่งปุ่มให้เรียบง่ายและคลิกได้ชัวร์ */
-  button.main{
-    background: linear-gradient(135deg,#6366f1,#ec4899);
-    color: #fff;
-    border: 0;
-    padding: 10px 24px;
-    font-weight: 600;
-    cursor: pointer;
-    pointer-events: auto;
-  }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>สมัครกิจกรรมศิลปหัตถกรรมนักเรียน ครั้งที่ 74</title>
 
-  .cat{background:#fff;border-radius:16px;margin-top:14px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.06)}
-  .cat h3{margin:0;padding:10px 12px;color:#fff;font-size:.98rem;display:flex;justify-content:space-between}
-  .cat h3 span{background:rgba(255,255,255,.3);border-radius:10px;padding:0 8px;font-size:.8rem}
-  label.it{display:flex;gap:10px;padding:10px 12px;border-bottom:1px solid #f0eefc;cursor:pointer;font-size:.92rem}
-  label.it:has(input:checked){background:#ecfdf5}
-  label.it input{width:22px;height:22px;flex:none;accent-color:#10b981}
-  .tg{display:inline-block;margin-left:6px;padding:0 8px;border-radius:10px;font-size:.75rem;background:#e0e7ff;color:#4338ca}
-  .tg.t{background:#fce7f3;color:#be185d}
+  <style>
+    /* ---------- สีและพื้นฐาน ---------- */
+    :root {
+      --c0: #6366f1;
+      --c1: #ec4899;
+      --c2: #f59e0b;
+      --c3: #10b981;
+      --c4: #0ea5e9;
+      --c5: #8b5cf6;
+      --c6: #ef4444;
+      --c7: #14b8a6;
+    }
 
-  /* ทำให้แถบด้านล่างเป็น Fixed ติดจอ ลอยอยู่ชั้นบนสุดด้วย z-index สูงสุด และเคลียร์ทุกอย่างที่อาจบล็อก */
-  .bar{
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    width: 100%;
-    max-width: 760px;
-    margin: 0 auto;
-    background: #fff;
-    border-top: 2px solid #c7c2f5;
-    padding: 12px 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-shadow: 0 -4px 16px rgba(99,102,241,.2);
-    z-index: 99999;
-    pointer-events: auto;
-  }
+    * { box-sizing: border-box; }
 
-  .bar b{color:#10b981;font-size:1.3rem}
-  table{width:100%;border-collapse:collapse;font-size:.9rem;margin-top:10px;background:#fff;border-radius:12px;overflow:hidden}
-  th,td{padding:8px;text-align:left;border-bottom:1px solid #eee}
-  th{background:#6366f1;color:#fff}
-  tr:nth-child(even) td{background:#faf8ff}
-  .big{display:flex;gap:10px;margin-top:10px}
-  .big div{flex:1;border-radius:14px;padding:12px;text-align:center;color:#fff;background:linear-gradient(135deg,#10b981,#0ea5e9)}
-  .big div:nth-child(2){background:linear-gradient(135deg,#f59e0b,#ef4444)}
-  .big b{display:block;font-size:1.6rem}
-  #msg{text-align:center;color:#6366f1;min-height:1.4em;font-weight:600;margin: 10px 0;}
-  .hide{display:none !important;}
-  .nav a.admin{background:#fee2e2;color:#b91c1c}
-  .action-btn{width:100%;margin:8px 0;padding:12px;border:0;border-radius:12px;font-weight:700;cursor:pointer}
-  .danger{background:#dc2626;color:#fff}
-  .danger-outline{background:#fff;color:#b91c1c;border:2px solid #ef4444}
-  .activity-card{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:12px;margin:8px 0}
-  .empty-card{background:#fff1f2;border:1px solid #fca5a5;border-left:5px solid #dc2626;color:#991b1b;border-radius:10px;padding:11px 12px;margin:7px 0}
-  .section-title{margin:18px 0 8px}
-  .admin-panel{background:#fff;border:1px solid #fecaca;border-radius:14px;padding:14px;margin-top:12px}
-  .admin-note{font-size:.85rem;color:#7f1d1d;background:#fff1f2;padding:10px;border-radius:9px}
-  .print-title{display:none;text-align:center;margin:0 0 14px;}
-  /* ปุ่มพิมพ์ต้องมองเห็นชัดเจนที่ท้ายรายงาน และไม่ถูกองค์ประกอบอื่นบัง */
-  .report-actions{
-    display:flex !important;
-    justify-content:center;
-    margin:22px 0 18px;
-    padding:12px;
-    position:sticky;
-    bottom:12px;
-    z-index:100;
-    background:rgba(255,255,255,.96);
-    border:1px solid #e5e7eb;
-    border-radius:14px;
-    box-shadow:0 4px 18px rgba(0,0,0,.10);
-  }
-  .report-actions button{
-    display:inline-flex !important;
-    align-items:center;
-    justify-content:center;
-    min-width:240px;
-    min-height:46px;
-    font-size:1rem;
-  }
-  .chart-wrap{background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:14px;margin:14px 0;}
-  .chart-row{display:grid;grid-template-columns:minmax(120px,220px) 1fr 42px;gap:9px;align-items:center;margin:10px 0;font-size:.84rem;}
-  .chart-label{overflow-wrap:anywhere;}
-  .chart-track{height:18px;background:#eef2ff;border-radius:20px;overflow:hidden;}
-  .chart-bar{height:100%;background:linear-gradient(90deg,#6366f1,#ec4899);border-radius:20px;min-width:0;}
-  .chart-value{text-align:right;font-weight:700;font-variant-numeric:tabular-nums;}
-  @media(max-width:520px){.chart-row{grid-template-columns:105px 1fr 32px;gap:6px;font-size:.75rem}.chart-wrap{padding:9px}}
-  @media print{
-    @page{size:A4;margin:14mm}
-    body{background:#fff!important;color:#111!important;padding:0!important;font-size:11pt}
-    header,.nav,#msg,.bar,select,#p1,#p4{display:none!important}
-    body.print-p2 #p2{display:block!important}
-    body.print-p3 #p3{display:block!important}
-    .report-actions{display:none!important}
-    .print-title{display:block!important}
-    .wrap{max-width:none!important;margin:0!important;padding:0!important}
-    .cat,.activity-card,.empty-card,.chart-wrap,.big div{break-inside:avoid;box-shadow:none!important}
-    .big div{color:#111!important;background:#f3f4f6!important;border:1px solid #ddd}
-    .cat h3,th{print-color-adjust:exact;-webkit-print-color-adjust:exact}
-    .chart-bar{print-color-adjust:exact;-webkit-print-color-adjust:exact}
-    .activity-card{border:1px solid #ddd}
-  }
+    body {
+      margin: 0;
+      padding-bottom: 90px;
+      font-family: "Sarabun", "Noto Sans Thai", system-ui, sans-serif;
+      line-height: 1.5;
+      color: #2a2a3c;
+      background: #f3f0ff;
+    }
 
-  /* แสดงเคอร์เซอร์รูปมือและสถานะปุ่มอย่างชัดเจน */
-  button, .nav a, label.it, select { cursor: pointer !important; }
-  button.main:hover { filter: brightness(.94); }
-  button.main:disabled { opacity: .65; cursor: wait !important; }
-</style>
+    .hide { display: none !important; }
+
+    /* ---------- ส่วนหัว ---------- */
+    header {
+      padding: 18px 12px 24px;
+      text-align: center;
+      color: #fff;
+      background: linear-gradient(135deg, #6366f1, #ec4899 60%, #f59e0b);
+      border-radius: 0 0 24px 24px;
+    }
+    header h1 { margin: 0; font-size: 1.15rem; }
+    header p  { margin: 4px 0 0; font-size: .85rem; opacity: .9; }
+
+    .wrap {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 12px;
+    }
+
+    #msg {
+      min-height: 1.4em;
+      margin: 10px 0;
+      text-align: center;
+      font-weight: 600;
+      color: #6366f1;
+    }
+
+    /* ---------- เมนูนำทาง ---------- */
+    .nav {
+      display: flex;
+      gap: 8px;
+      max-width: 760px;
+      margin: -18px auto 12px;
+      padding: 0 12px;
+    }
+    .nav a {
+      flex: 1;
+      padding: 10px;
+      text-align: center;
+      font-size: .9rem;
+      font-weight: 600;
+      color: #6366f1;
+      background: #fff;
+      border-radius: 12px;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(99, 102, 241, .2);
+    }
+    .nav a.on  { color: #fff;     background: #6366f1; }
+    .nav a.out { color: #b91c1c;  background: #fee2e2; }
+
+    /* ---------- ฟอร์มและปุ่ม ---------- */
+    input, button {
+      font: inherit;
+      padding: 10px;
+      background: #fff;
+      border: 2px solid #c7c2f5;
+      border-radius: 12px;
+    }
+
+    button.main {
+      padding: 10px 24px;
+      font-weight: 600;
+      color: #fff;
+      cursor: pointer;
+      background: linear-gradient(135deg, #6366f1, #ec4899);
+      border: 0;
+    }
+    button.main:disabled { opacity: .6; }
+
+    /* ---------- หน้า login ---------- */
+    .login {
+      margin-top: 24px;
+      padding: 24px;
+      text-align: center;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, .06);
+    }
+    .login input {
+      width: 100%;
+      font-size: 1.4rem;
+      letter-spacing: .4em;
+      text-align: center;
+    }
+    .login button {
+      width: 100%;
+      margin-top: 12px;
+    }
+
+    /* ---------- กล่องหมวดกิจกรรม ---------- */
+    .cat {
+      margin-top: 14px;
+      overflow: hidden;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, .06);
+    }
+    .cat h3 {
+      display: flex;
+      justify-content: space-between;
+      margin: 0;
+      padding: 10px 12px;
+      font-size: .98rem;
+      color: #fff;
+    }
+    .cat h3 span {
+      padding: 0 8px;
+      font-size: .8rem;
+      background: rgba(255, 255, 255, .3);
+      border-radius: 10px;
+    }
+
+    /* ---------- รายการกิจกรรม (checkbox) ---------- */
+    label.item {
+      display: flex;
+      gap: 10px;
+      padding: 10px 12px;
+      font-size: .92rem;
+      cursor: pointer;
+      border-bottom: 1px solid #f0eefc;
+    }
+    label.item:has(input:checked) { background: #ecfdf5; }
+    label.item input {
+      flex: none;
+      width: 22px;
+      height: 22px;
+      padding: 0;
+      accent-color: #10b981;
+    }
+
+    /* ป้ายประเภท: เดี่ยว / ทีม */
+    .tag {
+      display: inline-block;
+      margin-left: 6px;
+      padding: 0 8px;
+      font-size: .75rem;
+      color: #4338ca;
+      background: #e0e7ff;
+      border-radius: 10px;
+    }
+    .tag.team { color: #be185d; background: #fce7f3; }
+
+    /* ---------- แถบบันทึกด้านล่าง ---------- */
+    .save-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 99999;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 12px 20px;
+      background: #fff;
+      border-top: 2px solid #c7c2f5;
+      box-shadow: 0 -4px 16px rgba(99, 102, 241, .2);
+    }
+    .save-bar b { font-size: 1.3rem; color: #10b981; }
+
+    /* ---------- หน้าสรุป ---------- */
+    .stat-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .stat-row div {
+      flex: 1;
+      padding: 12px;
+      text-align: center;
+      color: #fff;
+      background: linear-gradient(135deg, #10b981, #0ea5e9);
+      border-radius: 14px;
+    }
+    .stat-row div:nth-child(2) { background: linear-gradient(135deg, #f59e0b, #ef4444); }
+    .stat-row b { display: block; font-size: 1.5rem; }
+
+    .section-title { margin: 18px 0 8px; }
+
+    .activity-card {
+      margin: 8px 0;
+      padding: 12px;
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+    }
+    .empty-card {
+      margin: 7px 0;
+      padding: 11px 12px;
+      color: #991b1b;
+      background: #fff1f2;
+      border: 1px solid #fca5a5;
+      border-left: 5px solid #dc2626;
+      border-radius: 10px;
+    }
+    .school-chip {
+      padding: 5px 10px;
+      font-size: .88rem;
+      color: #3730a3;
+      background: #eef2ff;
+      border-radius: 20px;
+    }
+
+    /* ---------- แผนภูมิแท่ง ---------- */
+    .chart-box {
+      margin: 14px 0;
+      padding: 14px;
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+    }
+    .chart-row {
+      display: grid;
+      grid-template-columns: minmax(110px, 220px) 1fr 32px;
+      gap: 8px;
+      align-items: center;
+      margin: 8px 0;
+      font-size: .82rem;
+    }
+    .chart-row b { text-align: right; }
+    .chart-track { height: 18px; overflow: hidden; background: #eef2ff; border-radius: 20px; }
+    .chart-bar   { height: 100%; background: linear-gradient(90deg, #6366f1, #ec4899); }
+  </style>
 </head>
+
 <body>
-<header><h1>งานศิลปหัตถกรรมนักเรียน ครั้งที่ 74</h1><p>ปีการศึกษา 2569 · ระบบสมัครกิจกรรมการแข่งขัน</p></header>
-<div class="nav">
-  <a id="n1" class="on" onclick="tab(1)">สมัครกิจกรรม</a>
-  <a id="n2" onclick="tab(2)">สรุปกิจกรรม</a>
-  <a id="n3" onclick="tab(3)">สรุปรายโรงเรียน</a>
-  <a id="n4" class="admin" onclick="openAdmin()">Admin</a>
+
+<!-- ===================== โครงหน้าเว็บ ===================== -->
+
+<header>
+  <h1>งานศิลปหัตถกรรมนักเรียน ครั้งที่ 74</h1>
+  <p id="headerSub">เครือข่ายสถานศึกษาที่ 19 ม่วงสามสิบ 4 · ปีการศึกษา 2569</p>
+</header>
+
+<!-- เมนู (แสดงหลัง login) -->
+<div class="nav hide" id="nav">
+  <a id="nav1" class="on" onclick="showTab(1)">สมัครกิจกรรม</a>
+  <a id="nav2"            onclick="showTab(2)">สรุปของโรงเรียน</a>
+  <a id="nav3"            onclick="showTab(3)">สรุปรวม</a>
+  <a class="out"          onclick="logout()">ออก</a>
 </div>
+
 <div class="wrap">
   <div id="msg"></div>
 
-  <div id="p1">
-    <select id="s1" onchange="loadForm()"></select>
-    <div id="list" style="margin-bottom: 20px;"></div>
+  <!-- หน้า login -->
+  <div id="pageLogin" class="login">
+    <p><b>กรอกรหัสโรงเรียน 4 หลัก</b></p>
+    <input id="codeInput" type="password" inputmode="numeric" maxlength="4"
+           placeholder="••••" onkeydown="if (event.key === 'Enter') login()">
+    <button class="main" type="button" onclick="login()">เข้าสู่ระบบ</button>
   </div>
 
-  <div id="p2" class="hide">
-    <h2 class="print-title">สรุปผลการสมัครกิจกรรมศิลปหัตถกรรมนักเรียน ครั้งที่ 74</h2>
-    <p>แสดงกิจกรรมทั้งหมดตามลำดับในหน้าสมัคร พร้อมรายชื่อโรงเรียนที่สมัคร</p>
-    <select id="s2" onchange="loadSummary()"></select>
-    <div id="sum"></div>
-    <div class="report-actions"><button class="main" type="button" onclick="printReport(2)">พิมพ์ / บันทึกเป็น PDF</button></div>
-  </div>
-
-  <div id="p3" class="hide">
-    <h2 class="print-title">สรุปผลการสมัครรายโรงเรียน</h2>
-    <h3 class="section-title">สรุปรายโรงเรียน</h3>
-    <select id="s3" onchange="loadSchoolSummary()"><option value="">-- เลือกโรงเรียน --</option></select>
-    <div id="schoolSum"></div>
-    <div class="report-actions"><button class="main" type="button" onclick="printReport(3)">พิมพ์ / บันทึกเป็น PDF</button></div>
-  </div>
-
-  <div id="p4" class="hide">
-    <h3 class="section-title">หน้าแอดมินจัดการข้อมูล</h3>
-    <div class="admin-panel">
-      <p><b>ลบข้อมูลการสมัครของโรงเรียนที่เลือก</b></p>
-      <select id="adminSchool"><option value="">-- เลือกโรงเรียน --</option></select>
-      <button class="action-btn danger-outline" type="button" onclick="deleteSelectedSchool()">ลบข้อมูลทั้งหมดของโรงเรียนนี้</button>
-      <hr>
-      <p><b>ลบข้อมูลการสมัครทั้งหมดทุกโรงเรียน</b></p>
-      <button class="action-btn danger" type="button" onclick="deleteAllSchools()">ลบข้อมูลทุกโรงเรียนทั้งหมด</button>
-      <p class="admin-note">คำเตือน: การลบไม่สามารถย้อนกลับได้ โปรดตรวจสอบก่อนยืนยันทุกครั้ง</p>
-    </div>
-  </div>
+  <div id="page1" class="hide"><div id="formList"></div></div>   <!-- สมัครกิจกรรม -->
+  <div id="page2" class="hide"><div id="mySummary"></div></div>  <!-- สรุปของโรงเรียน -->
+  <div id="page3" class="hide"><div id="allSummary"></div></div> <!-- สรุปรวม -->
 </div>
 
-<!-- แถบบันทึกแยกออกมาอยู่นอก wrap เพื่อความชัวร์ในการแสดงผล -->
-<div id="bar" class="bar hide">
-  <span>เลือกแล้ว <b id="cnt">0</b> กิจกรรม</span>
-  <button class="main" type="button" onclick="saveAll()">บันทึกข้อมูล</button>
+<!-- แถบบันทึก (แสดงเฉพาะหน้าสมัคร) -->
+<div id="saveBar" class="save-bar hide">
+  <span>เลือกแล้ว <b id="selectedCount">0</b> กิจกรรม</span>
+  <button class="main" type="button" onclick="saveRegistrations()">บันทึกข้อมูล</button>
 </div>
+
 
 <script>
-/* ===== ตั้งค่า Supabase ===== */
+/* ============================================================
+   1) ตั้งค่า
+   ============================================================ */
+
 const SUPABASE_URL = "https://ilqhwnnedwcejoukhpgb.supabase.co";
 const SUPABASE_KEY = "sb_publishable_JcEAj8jqW1wp2CX4_VPiFQ_XYttcTFr";
 
-const SCHOOLS = ["ร.ร.ม่วงสามสิบ (อำนวยปัญญา ฯ)","ร.ร.บ้านโพนเมือง","ร.ร.บ้านดอนแดง","ร.ร.บ้านวังมนเดือยไก่","ร.ร.บ้านทุ่งใต้","ร.ร.บ้านเหล่าข้าวดอนก่อ","ร.ร.บ้านตำแย","ร.ร.บ้านเทพา","ร.ร.บ้านหนองดูนโนนค้อหนองหัวลิง","ร.ร.บ้านหนองขอน"];
+const DEFAULT_SUBTITLE = "เครือข่ายสถานศึกษาที่ 19 ม่วงสามสิบ 4 · ปีการศึกษา 2569";
 
-/* ===== รายการกิจกรรม ===== */
-const L3=["ป.1-ป.3","ป.4-ป.6","ม.1-ม.3"], L2=["ป.1-ป.6","ม.1-ม.3"], U=["ป.4-ป.6","ม.1-ม.3"], P="ป.1-ป.6", M="ม.1-ม.3";
-const a=(n,lv,t)=>lv.map(l=>({n:n+" "+l,t}));
-const dis=(n,kinds,lv,t)=>kinds.flatMap(k=>lv.map(l=>({n:`${n} ประเภทนักเรียนที่มี${k} ${l}`,t})));
-const D=(t,...x)=>x; 
-const CATS=[
- ["ภาษาไทย",[...a("คัดลายมือสื่อภาษาไทย",L3,"เดี่ยว"),...a("ท่องอาขยานทำนองเสนาะ",L3,"เดี่ยว")]],
- ["คณิตศาสตร์",[...a("การแข่งขันอัจฉริยภาพทางคณิตศาสตร์",L3,"เดี่ยว"),...a("การแข่งขันคิดเลขเร็ว",L3,"เดี่ยว"),...a("การแข่งขันเอแม็ท (A-MATH)",U,"ทีม 2 คน")]],
- ["วิทยาศาสตร์และเทคโนโลยี",[...a("การประกวดผลงานสิ่งประดิษฐ์ทางวิทยาศาสตร์",L2,"ทีม 2 คน"),...a("การแข่งขันอัจฉริยภาพทางวิทยาศาสตร์",U,"ทีม 3 คน")]],
- ["ภาพยนตร์สั้น",a("การประกวดภาพยนตร์สั้น",L2,"ทีม 5 คน")],
- ["สุขศึกษาและพลศึกษา",[...a("การแข่งขันคีตศิลป์มวยไทย",L2,"ทีม 10 คน"),...a("การแข่งขันแอโรบิก",L2,"ทีม 10 คน"),...a("การแข่งขันคีตะมวยไทย",L2,"ทีม 10 คน")]],
- ["ศิลปะ ทัศนศิลป์",[...a("การแข่งขันจิตรกรรมเทคนิคผสม Mixed Media",L3,"เดี่ยว"),...a("การแข่งขันการวาดภาพระบายสี",L3,"เดี่ยว"),...a("การแข่งขันเขียนภาพไทยประเพณี",[M],"เดี่ยว"),...a("การแข่งขันการออกแบบร่าง (SKETCH DESIGN)",U,"เดี่ยว"),...a("การแข่งขันวาดเส้น (DRAWING)",[M],"เดี่ยว"),...a("การแข่งขันประติมากรรม",L3,"ทีม 3 คน")]],
- ["ศิลปะ ดนตรี",[
-   ...a("การแข่งขันขับร้องเพลงไทยหมู่",L2,"ทีม 14 คน"),
-   ...a("การแข่งขันวงดนตรีร่วมสมัย (Contemporary Ensemble)",["ป.1-ม.3"],"ทีม 25 คน"),
-   ...a("การแข่งขันวงดนตรีสากลเครื่องผสม (Various Ensemble)",["ป.1-ม.3"],"ทีม 16 คน"),
-   ...a("การแข่งขันเดี่ยวระนาดเอก",[M],"เดี่ยว"),
-   ...a("การแข่งขันเดี่ยวระนาดทุ้ม",[P],"เดี่ยว"),
-   ...a("การแข่งขันเดี่ยวฆ้องวงใหญ่",L2,"เดี่ยว"),
-   ...a("การแข่งขันเดี่ยวฆ้องวงเล็ก",L2,"เดี่ยว"),
-   ...a("การแข่งขันเดี่ยวซอด้วง",L2,"เดี่ยว"),
-   ...a("การแข่งขันเดี่ยวซออู้",L2,"เดี่ยว"),
-   ...a("การแข่งขันเดี่ยวจะเข้",L2,"เดี่ยว"),
-   ...a("การแข่งขันเดี่ยวขิม 7 หย่อง",L2,"เดี่ยว"),
-   ...a("การแข่งขันเดี่ยวขลุ่ยเพียงออ",L2,"เดี่ยว"),
-   ...a("การแข่งขันขับร้องเพลงไทยหมู่ (เดี่ยว)",L2,"เดี่ยว"),
-   ...a("การแข่งขันวงเครื่องสายผสมขิม",L2,"ทีม 9 คน"),
-   ...a("การแข่งขันวงเครื่องสายผสมปี่พาทย์ไม้นวม",L2,"ทีม 15 คน"),
-   ...a("การแข่งขันวงปี่พาทย์ไม้แข็ง",L2,"ทีม 12 คน"),
-   ...a("การแข่งขันขับร้องเพลงไทยลูกทุ่ง ประเภทชาย",L2,"เดี่ยว"),
-   ...a("การแข่งขันขับร้องเพลงไทยลูกทุ่ง ประเภทหญิง",L2,"เดี่ยว"),
-   ...a("การแข่งขันขับร้องเพลงไทยลูกกรุง ประเภทชาย",L2,"เดี่ยว"),
-   ...a("การแข่งขันขับร้องเพลงไทยลูกกรุง ประเภทหญิง",L2,"เดี่ยว"),
-   ...a("การแข่งขันวงดุริยางค์เครื่องลม (Wind)",["ป.1-ม.3"],"ทีม 30 คน"),
-   ...a("การแข่งขันขับร้องประสานเสียง",["ป.1-ม.3"],"ทีม 40 คน")]],
- ["ศิลปะ นาฏศิลป์",[...a("การแข่งขันรำหรือระบำมาตรฐาน",L2,"ทีม 10 คน"),...a("การแข่งขันนาฏศิลป์ไทยอนุรักษ์",L2,"ทีม 10 คน"),...a("การแข่งขันนาฏศิลป์ไทยสร้างสรรค์",L2,"ทีม 16 คน"),...a("การแข่งขันรำวงมาตรฐาน",L2,"ทีม 10 คน")]],
- ["ภาษาต่างประเทศ",[...a("การแข่งขันพูดภาษาอังกฤษ (Impromptu Speech)",U,"เดี่ยว"),...a("การแข่งขันการเล่านิทาน (Story Telling)",U,"เดี่ยว")]],
- ["หนังสือเล่มเล็ก",a("การแข่งขันการจัดทำหนังสือเล่มเล็ก",U,"ทีม 3 คน")],
- ["กิจกรรมพัฒนาผู้เรียน",[...a("การแข่งขันผูกเงื่อน เดินทรงตัวและโยนบอล",["ป.1-ป.3"],"ทีม 6 คน"),...a("การแข่งขันการใช้เข็มทิศและการคาดคะเนและสะกดรอย",["ป.4-ป.6"],"ทีม 6 คน"),...a("การจัดการค่ายพักแรม",[M],"ทีม 8 คน"),...a("การแข่งขันเต้นประกอบเพลง Cover Dance Contest (ลูกเสือต้านภัยยาเสพติด)",L3,"ทีม 10 คน")]],
- ["คอมพิวเตอร์",[...a("การแข่งขันการสร้างการ์ตูนด้วยโปรแกรมคอมพิวเตอร์กราฟิก",["ป.1-ป.3"],"ทีม 2 คน"),...a("การแข่งขันการสร้างการ์ตูนเรื่องสั้น (Comic Strip)",U,"ทีม 2 คน"),...a("การแข่งขันการออกแบบสิ่งของเครื่องใช้ด้วยโปรแกรมคอมพิวเตอร์",[M],"ทีม 2 คน")]],
- ["หุ่นยนต์",a("การแข่งขันหุ่นยนต์ระดับกลาง",L2,"ทีม 3 คน")],
- ["การงานอาชีพ",[...a("การแข่งขันประดิษฐ์ของใช้จากวัสดุธรรมชาติในท้องถิ่น",U,"ทีม 3 คน"),...a("การแข่งขันจักสานไม้ไผ่",U,"ทีม 3 คน"),...a("การแข่งขันประดิษฐ์พานพุ่มสักการะ",["ป.4-ป.6"],"ทีม 6 คน"),...a("การแข่งขันประดิษฐ์กระทงดอกไม้ธูปเทียนแพ",[M],"ทีม 6 คน"),...a("การประกวดโครงงานอาชีพ",U,"ทีม 3 คน"),...a("การแข่งขันจัดสวนถาดแบบแห้ง",U,"ทีม 3 คน"),...a("การประกวดแปรรูปอาหาร",U,"ทีม 3 คน"),...a("การแข่งขันทำน้ำพริก ผักสด เครื่องเคียง",U,"ทีม 3 คน"),...a("การแข่งขันทำอาหารคาวหวานเพื่อสุขภาพเชิงธุรกิจ",U,"ทีม 3 คน"),...a("การแข่งขันแกะสลักผักและผลไม้",U,"ทีม 3 คน")]],
- ["ปฐมวัย",[{n:"การปั้นดินน้ำมัน ปฐมวัย",t:"ทีม 3 คน"},{n:"การสร้างภาพด้วยการฉีก ตัด ปะ กระดาษ ปฐมวัย",t:"ทีม 3 คน"}]],
- ["เรียนรวม ภาษาไทย",dis("การแข่งขันการจัดทำหนังสือเล่มเล็ก",["ความบกพร่องทางการเรียนรู้"],U,"ทีม 3 คน")],
- ["เรียนรวม การงานอาชีพ",[
-   ...dis("การแข่งขันการทำอาหาร",["ความบกพร่องทางสติปัญญา","ความบกพร่องทางการเรียนรู้"],[P],"ทีม 3 คน"),
-   ...dis("การแข่งขันการประดิษฐ์งานใบตองประเภทบายศรีปากชาม",["ความบกพร่องทางสติปัญญา","ความบกพร่องทางการเรียนรู้"],[P],"ทีม 3 คน"),
-   ...dis("การแข่งขันประดิษฐ์ของใช้จากเศษวัสดุเหลือใช้",["ความบกพร่องทางสติปัญญา","ความบกพร่องทางการเรียนรู้"],[P],"ทีม 3 คน"),
-   ...dis("การแข่งขันการประดิษฐ์ของเล่นจากเศษวัสดุเหลือใช้",["ความบกพร่องทางสติปัญญา","ความบกพร่องทางการเรียนรู้"],[P],"ทีม 3 คน"),
-   ...dis("การแข่งขันการร้อยมาลัยดอกไม้สด",["ความบกพร่องทางสติปัญญา","ความบกพร่องทางการเรียนรู้"],[P],"ทีม 3 คน"),
-   ...dis("การแข่งขันการจัดสวนถาดแบบชื้น",["ความบกพร่องทางการเรียนรู้"],[P],"ทีม 3 คน"),
-   ...dis("การแข่งขันการจัดสวนถาดแบบแห้ง",["ความบกพร่องทางการเรียนรู้"],[P],"ทีม 3 คน")]],
- ["เรียนรวม ศิลปะ",[
-   ...dis("การแข่งขันการวาดภาพระบายสี",["ความบกพร่องทางการได้ยิน","ความบกพร่องทางสติปัญญา","ความบกพร่องทางร่างกาย","ความบกพร่องทางการเรียนรู้"],L2,"เดี่ยว"),
-   ...a("การแข่งขันการวาดภาพระบายสี ประเภทนักเรียนออทิสติก",L2,"เดี่ยว"),
-   ...dis("การประกวดการขับร้องเพลงไทยลูกทุ่ง",["ความบกพร่องทางการเห็น","ความบกพร่องทางสติปัญญา","ความบกพร่องทางร่างกาย","ความบกพร่องทางการเรียนรู้"],L2,"เดี่ยว"),
-   ...a("การประกวดการขับร้องเพลงไทยลูกทุ่ง ประเภทนักเรียนออทิสติก",L2,"เดี่ยว"),
-   {n:"การแข่งขันการเต้นหางเครื่องประกอบเพลง ประเภทนักเรียนที่มีความบกพร่องทางการเรียนรู้ ป.1-ป.6",t:"ทีม 7 คน"}]],
- ["ศิลปวัฒนธรรมอีสาน",[...a("การแข่งขันเดี่ยวโปงลาง",L2,"เดี่ยว"),...a("การแข่งขันเดี่ยวโหวด",L2,"เดี่ยว"),...a("การแข่งขันเดี่ยวพิณ",L2,"เดี่ยว"),...a("การแข่งขันเดี่ยวแคน",L2,"เดี่ยว"),...a("การแข่งขันวงดนตรีพื้นเมืองอีสาน (โปงลาง)",L2,"ทีม 30 คน")]],
- ["สังคมศึกษา ศาสนา วัฒนธรรม",[...a("การแข่งขันโครงงานคุณธรรม",L3,"ทีม 5 คน"),...a("กิจกรรมมารยาทไทย",L3,"ทีม 2 คน")]],
- ["นักบินน้อย",[{n:"การแข่งขันเครื่องร่อนแบบเดินตาม ป.1-ป.3",t:"ทีม 2 คน"},{n:"การแข่งขันเครื่องร่อน ประเภทร่อนนานปล่อยด้วยมือ ป.4-ป.6",t:"ทีม 2 คน"},{n:"การแข่งขันเครื่องบินพลังยาง ประเภทบินนานปล่อยอิสระ ม.1-ม.3",t:"ทีม 2 คน"}]]
+// รายชื่อโรงเรียนและรหัส (ต้องตรงกับคอมเมนต์บนสุดของไฟล์)
+const SCHOOLS = [
+  { name: "โรงเรียนบ้านสร้างมิ่ง",                      code: "4817" },
+  { name: "โรงเรียนชุมชนบ้านหนองแสง",                   code: "2593" },
+  { name: "โรงเรียนบ้านนาขามดอนติ้ว",                   code: "7364" },
+  { name: "โรงเรียนบ้านสวนงัว(ราษฎร์ใจดี)",             code: "1928" },
+  { name: "โรงเรียน ราษฎร์ร่วมแรงรัฐ(กำจัดอุปถัมภ์)",   code: "6051" },
+  { name: "โรงเรียนบ้านดุมใหญ่ดงยาง",                   code: "3846" },
+  { name: "โรงเรียนบ้านบัวยาง",                         code: "8275" },
+  { name: "โรงเรียนบ้านหนองเมืองน้อย",                  code: "5149" },
+  { name: "โรงเรียนบ้านท่าลาด",                         code: "9632" },
 ];
-// กำหนดรหัสกิจกรรม
-const ACTS=[];
-CATS.forEach(([c,list],ci)=>list.forEach((x,i)=>ACTS.push({code:`${ci+1}-${i+1}`,cat:c,name:x.n,type:x.t})));
 
-const H={
+
+/* ============================================================
+   2) รายการกิจกรรม
+   ============================================================ */
+
+// ชุดระดับชั้นที่ใช้ซ้ำ
+const LEVELS_3_GROUPS = ["ป.1-ป.3", "ป.4-ป.6", "ม.1-ม.3"];
+const LEVELS_2_GROUPS = ["ป.1-ป.6", "ม.1-ม.3"];
+const LEVELS_UPPER    = ["ป.4-ป.6", "ม.1-ม.3"];
+const PRIMARY         = "ป.1-ป.6";
+const SECONDARY       = "ม.1-ม.3";
+const ALL_LEVELS      = ["ป.1-ม.3"];
+
+// สร้างกิจกรรม 1 ชื่อ × หลายระดับชั้น → ได้หลายรายการ
+function makeActivities(name, levels, type) {
+  return levels.map(level => ({ name: `${name} ${level}`, type }));
+}
+
+// สร้างกิจกรรมเรียนรวม: ชื่อ × ประเภทความพิการ × ระดับชั้น
+function makeInclusiveActivities(name, disabilities, levels, type) {
+  return disabilities.flatMap(disability =>
+    levels.map(level => ({
+      name: `${name} ประเภทนักเรียนที่มี${disability} ${level}`,
+      type,
+    }))
+  );
+}
+
+const DIS_INTELLECT = "ความบกพร่องทางสติปัญญา";
+const DIS_LEARNING  = "ความบกพร่องทางการเรียนรู้";
+const DIS_HEARING   = "ความบกพร่องทางการได้ยิน";
+const DIS_PHYSICAL  = "ความบกพร่องทางร่างกาย";
+const DIS_VISION    = "ความบกพร่องทางการเห็น";
+
+// หมวดกิจกรรม: [ชื่อหมวด, [รายการกิจกรรม]]
+const CATEGORIES = [
+
+  ["ภาษาไทย", [
+    ...makeActivities("คัดลายมือสื่อภาษาไทย",   LEVELS_3_GROUPS, "เดี่ยว"),
+    ...makeActivities("ท่องอาขยานทำนองเสนาะ",  LEVELS_3_GROUPS, "เดี่ยว"),
+  ]],
+
+  ["คณิตศาสตร์", [
+    ...makeActivities("การแข่งขันอัจฉริยภาพทางคณิตศาสตร์", LEVELS_3_GROUPS, "เดี่ยว"),
+    ...makeActivities("การแข่งขันคิดเลขเร็ว",              LEVELS_3_GROUPS, "เดี่ยว"),
+    ...makeActivities("การแข่งขันเอแม็ท (A-MATH)",         LEVELS_UPPER,    "ทีม 2 คน"),
+  ]],
+
+  ["วิทยาศาสตร์และเทคโนโลยี", [
+    ...makeActivities("การประกวดผลงานสิ่งประดิษฐ์ทางวิทยาศาสตร์", LEVELS_2_GROUPS, "ทีม 2 คน"),
+    ...makeActivities("การแข่งขันอัจฉริยภาพทางวิทยาศาสตร์",        LEVELS_UPPER,    "ทีม 3 คน"),
+  ]],
+
+  ["ภาพยนตร์สั้น",
+    makeActivities("การประกวดภาพยนตร์สั้น", LEVELS_2_GROUPS, "ทีม 5 คน"),
+  ],
+
+  ["สุขศึกษาและพลศึกษา", [
+    ...makeActivities("การแข่งขันคีตศิลป์มวยไทย", LEVELS_2_GROUPS, "ทีม 10 คน"),
+    ...makeActivities("การแข่งขันแอโรบิก",        LEVELS_2_GROUPS, "ทีม 10 คน"),
+    ...makeActivities("การแข่งขันคีตะมวยไทย",     LEVELS_2_GROUPS, "ทีม 10 คน"),
+  ]],
+
+  ["ศิลปะ ทัศนศิลป์", [
+    ...makeActivities("การแข่งขันจิตรกรรมเทคนิคผสม Mixed Media", LEVELS_3_GROUPS, "เดี่ยว"),
+    ...makeActivities("การแข่งขันการวาดภาพระบายสี",              LEVELS_3_GROUPS, "เดี่ยว"),
+    ...makeActivities("การแข่งขันเขียนภาพไทยประเพณี",            [SECONDARY],     "เดี่ยว"),
+    ...makeActivities("การแข่งขันการออกแบบร่าง (SKETCH DESIGN)", LEVELS_UPPER,    "เดี่ยว"),
+    ...makeActivities("การแข่งขันวาดเส้น (DRAWING)",             [SECONDARY],     "เดี่ยว"),
+    ...makeActivities("การแข่งขันประติมากรรม",                   LEVELS_3_GROUPS, "ทีม 3 คน"),
+  ]],
+
+  ["ศิลปะ ดนตรี", [
+    ...makeActivities("การแข่งขันขับร้องเพลงไทยหมู่",                          LEVELS_2_GROUPS, "ทีม 14 คน"),
+    ...makeActivities("การแข่งขันวงดนตรีร่วมสมัย (Contemporary Ensemble)",     ALL_LEVELS,      "ทีม 25 คน"),
+    ...makeActivities("การแข่งขันวงดนตรีสากลเครื่องผสม (Various Ensemble)",    ALL_LEVELS,      "ทีม 16 คน"),
+    ...makeActivities("การแข่งขันเดี่ยวระนาดเอก",                              [SECONDARY],     "เดี่ยว"),
+    ...makeActivities("การแข่งขันเดี่ยวระนาดทุ้ม",                             [PRIMARY],       "เดี่ยว"),
+    ...makeActivities("การแข่งขันเดี่ยวฆ้องวงใหญ่",                            LEVELS_2_GROUPS, "เดี่ยว"),
+    ...makeActivities("การแข่งขันเดี่ยวฆ้องวงเล็ก",                            LEVELS_2_GROUPS, "เดี่ยว"),
+    ...makeActivities("การแข่งขันเดี่ยวซอด้วง",                                LEVELS_2_GROUPS, "เดี่ยว"),
+    ...makeActivities("การแข่งขันเดี่ยวซออู้",                                 LEVELS_2_GROUPS, "เดี่ยว"),
+    ...makeActivities("การแข่งขันเดี่ยวจะเข้",                                 LEVELS_2_GROUPS, "เดี่ยว"),
+    ...makeActivities("การแข่งขันเดี่ยวขิม 7 หย่อง",                           LEVELS_2_GROUPS, "เดี่ยว"),
+    ...makeActivities("การแข่งขันเดี่ยวขลุ่ยเพียงออ",                          LEVELS_2_GROUPS, "เดี่ยว"),
+    ...makeActivities("การแข่งขันขับร้องเพลงไทยหมู่ (เดี่ยว)",                 LEVELS_2_GROUPS, "เดี่ยว"),
+    ...makeActivities("การแข่งขันวงเครื่องสายผสมขิม",                          LEVELS_2_GROUPS, "ทีม 9 คน"),
+    ...makeActivities("การแข่งขันวงเครื่องสายผสมปี่พาทย์ไม้นวม",               LEVELS_2_GROUPS, "ทีม 15 คน"),
+    ...makeActivities("การแข่งขันวงปี่พาทย์ไม้แข็ง",                           LEVELS_2_GROUPS, "ทีม 12 คน"),
+    ...makeActivities("การแข่งขันขับร้องเพลงไทยลูกทุ่ง ประเภทชาย",             LEVELS_2_GROUPS, "เดี่ยว"),
+    ...makeActivities("การแข่งขันขับร้องเพลงไทยลูกทุ่ง ประเภทหญิง",            LEVELS_2_GROUPS, "เดี่ยว"),
+    ...makeActivities("การแข่งขันขับร้องเพลงไทยลูกกรุง ประเภทชาย",             LEVELS_2_GROUPS, "เดี่ยว"),
+    ...makeActivities("การแข่งขันขับร้องเพลงไทยลูกกรุง ประเภทหญิง",            LEVELS_2_GROUPS, "เดี่ยว"),
+    ...makeActivities("การแข่งขันวงดุริยางค์เครื่องลม (Wind)",                 ALL_LEVELS,      "ทีม 30 คน"),
+    ...makeActivities("การแข่งขันขับร้องประสานเสียง",                          ALL_LEVELS,      "ทีม 40 คน"),
+  ]],
+
+  ["ศิลปะ นาฏศิลป์", [
+    ...makeActivities("การแข่งขันรำหรือระบำมาตรฐาน",     LEVELS_2_GROUPS, "ทีม 10 คน"),
+    ...makeActivities("การแข่งขันนาฏศิลป์ไทยอนุรักษ์",   LEVELS_2_GROUPS, "ทีม 10 คน"),
+    ...makeActivities("การแข่งขันนาฏศิลป์ไทยสร้างสรรค์", LEVELS_2_GROUPS, "ทีม 16 คน"),
+    ...makeActivities("การแข่งขันรำวงมาตรฐาน",           LEVELS_2_GROUPS, "ทีม 10 คน"),
+  ]],
+
+  ["ภาษาต่างประเทศ", [
+    ...makeActivities("การแข่งขันพูดภาษาอังกฤษ (Impromptu Speech)", LEVELS_UPPER, "เดี่ยว"),
+    ...makeActivities("การแข่งขันการเล่านิทาน (Story Telling)",     LEVELS_UPPER, "เดี่ยว"),
+  ]],
+
+  ["หนังสือเล่มเล็ก",
+    makeActivities("การแข่งขันการจัดทำหนังสือเล่มเล็ก", LEVELS_UPPER, "ทีม 3 คน"),
+  ],
+
+  ["กิจกรรมพัฒนาผู้เรียน", [
+    ...makeActivities("การแข่งขันผูกเงื่อน เดินทรงตัวและโยนบอล",                          ["ป.1-ป.3"], "ทีม 6 คน"),
+    ...makeActivities("การแข่งขันการใช้เข็มทิศและการคาดคะเนและสะกดรอย",                   ["ป.4-ป.6"], "ทีม 6 คน"),
+    ...makeActivities("การจัดการค่ายพักแรม",                                              [SECONDARY], "ทีม 8 คน"),
+    ...makeActivities("การแข่งขันเต้นประกอบเพลง Cover Dance Contest (ลูกเสือต้านภัยยาเสพติด)", LEVELS_3_GROUPS, "ทีม 10 คน"),
+  ]],
+
+  ["คอมพิวเตอร์", [
+    ...makeActivities("การแข่งขันการสร้างการ์ตูนด้วยโปรแกรมคอมพิวเตอร์กราฟิก",   ["ป.1-ป.3"], "ทีม 2 คน"),
+    ...makeActivities("การแข่งขันการสร้างการ์ตูนเรื่องสั้น (Comic Strip)",        LEVELS_UPPER, "ทีม 2 คน"),
+    ...makeActivities("การแข่งขันการออกแบบสิ่งของเครื่องใช้ด้วยโปรแกรมคอมพิวเตอร์", [SECONDARY], "ทีม 2 คน"),
+  ]],
+
+  ["หุ่นยนต์",
+    makeActivities("การแข่งขันหุ่นยนต์ระดับกลาง", LEVELS_2_GROUPS, "ทีม 3 คน"),
+  ],
+
+  ["การงานอาชีพ", [
+    ...makeActivities("การแข่งขันประดิษฐ์ของใช้จากวัสดุธรรมชาติในท้องถิ่น", LEVELS_UPPER, "ทีม 3 คน"),
+    ...makeActivities("การแข่งขันจักสานไม้ไผ่",                            LEVELS_UPPER, "ทีม 3 คน"),
+    ...makeActivities("การแข่งขันประดิษฐ์พานพุ่มสักการะ",                  ["ป.4-ป.6"], "ทีม 6 คน"),
+    ...makeActivities("การแข่งขันประดิษฐ์กระทงดอกไม้ธูปเทียนแพ",           [SECONDARY], "ทีม 6 คน"),
+    ...makeActivities("การประกวดโครงงานอาชีพ",                             LEVELS_UPPER, "ทีม 3 คน"),
+    ...makeActivities("การแข่งขันจัดสวนถาดแบบแห้ง",                        LEVELS_UPPER, "ทีม 3 คน"),
+    ...makeActivities("การประกวดแปรรูปอาหาร",                              LEVELS_UPPER, "ทีม 3 คน"),
+    ...makeActivities("การแข่งขันทำน้ำพริก ผักสด เครื่องเคียง",            LEVELS_UPPER, "ทีม 3 คน"),
+    ...makeActivities("การแข่งขันทำอาหารคาวหวานเพื่อสุขภาพเชิงธุรกิจ",     LEVELS_UPPER, "ทีม 3 คน"),
+    ...makeActivities("การแข่งขันแกะสลักผักและผลไม้",                      LEVELS_UPPER, "ทีม 3 คน"),
+  ]],
+
+  ["ปฐมวัย", [
+    { name: "การปั้นดินน้ำมัน ปฐมวัย",                          type: "ทีม 3 คน" },
+    { name: "การสร้างภาพด้วยการฉีก ตัด ปะ กระดาษ ปฐมวัย",       type: "ทีม 3 คน" },
+  ]],
+
+  ["เรียนรวม ภาษาไทย",
+    makeInclusiveActivities("การแข่งขันการจัดทำหนังสือเล่มเล็ก", [DIS_LEARNING], LEVELS_UPPER, "ทีม 3 คน"),
+  ],
+
+  ["เรียนรวม การงานอาชีพ", [
+    ...makeInclusiveActivities("การแข่งขันการทำอาหาร",                            [DIS_INTELLECT, DIS_LEARNING], [PRIMARY], "ทีม 3 คน"),
+    ...makeInclusiveActivities("การแข่งขันการประดิษฐ์งานใบตองประเภทบายศรีปากชาม", [DIS_INTELLECT, DIS_LEARNING], [PRIMARY], "ทีม 3 คน"),
+    ...makeInclusiveActivities("การแข่งขันประดิษฐ์ของใช้จากเศษวัสดุเหลือใช้",     [DIS_INTELLECT, DIS_LEARNING], [PRIMARY], "ทีม 3 คน"),
+    ...makeInclusiveActivities("การแข่งขันการประดิษฐ์ของเล่นจากเศษวัสดุเหลือใช้",  [DIS_INTELLECT, DIS_LEARNING], [PRIMARY], "ทีม 3 คน"),
+    ...makeInclusiveActivities("การแข่งขันการร้อยมาลัยดอกไม้สด",                  [DIS_INTELLECT, DIS_LEARNING], [PRIMARY], "ทีม 3 คน"),
+    ...makeInclusiveActivities("การแข่งขันการจัดสวนถาดแบบชื้น",                   [DIS_LEARNING],                [PRIMARY], "ทีม 3 คน"),
+    ...makeInclusiveActivities("การแข่งขันการจัดสวนถาดแบบแห้ง",                   [DIS_LEARNING],                [PRIMARY], "ทีม 3 คน"),
+  ]],
+
+  ["เรียนรวม ศิลปะ", [
+    ...makeInclusiveActivities("การแข่งขันการวาดภาพระบายสี",
+        [DIS_HEARING, DIS_INTELLECT, DIS_PHYSICAL, DIS_LEARNING], LEVELS_2_GROUPS, "เดี่ยว"),
+    ...makeActivities("การแข่งขันการวาดภาพระบายสี ประเภทนักเรียนออทิสติก", LEVELS_2_GROUPS, "เดี่ยว"),
+    ...makeInclusiveActivities("การประกวดการขับร้องเพลงไทยลูกทุ่ง",
+        [DIS_VISION, DIS_INTELLECT, DIS_PHYSICAL, DIS_LEARNING], LEVELS_2_GROUPS, "เดี่ยว"),
+    ...makeActivities("การประกวดการขับร้องเพลงไทยลูกทุ่ง ประเภทนักเรียนออทิสติก", LEVELS_2_GROUPS, "เดี่ยว"),
+    { name: "การแข่งขันการเต้นหางเครื่องประกอบเพลง ประเภทนักเรียนที่มีความบกพร่องทางการเรียนรู้ ป.1-ป.6", type: "ทีม 7 คน" },
+  ]],
+
+  ["ศิลปวัฒนธรรมอีสาน", [
+    ...makeActivities("การแข่งขันเดี่ยวโปงลาง",                 LEVELS_2_GROUPS, "เดี่ยว"),
+    ...makeActivities("การแข่งขันเดี่ยวโหวด",                   LEVELS_2_GROUPS, "เดี่ยว"),
+    ...makeActivities("การแข่งขันเดี่ยวพิณ",                    LEVELS_2_GROUPS, "เดี่ยว"),
+    ...makeActivities("การแข่งขันเดี่ยวแคน",                    LEVELS_2_GROUPS, "เดี่ยว"),
+    ...makeActivities("การแข่งขันวงดนตรีพื้นเมืองอีสาน (โปงลาง)", LEVELS_2_GROUPS, "ทีม 30 คน"),
+  ]],
+
+  ["สังคมศึกษา ศาสนา วัฒนธรรม", [
+    ...makeActivities("การแข่งขันโครงงานคุณธรรม", LEVELS_3_GROUPS, "ทีม 5 คน"),
+    ...makeActivities("กิจกรรมมารยาทไทย",         LEVELS_3_GROUPS, "ทีม 2 คน"),
+  ]],
+
+  ["นักบินน้อย", [
+    { name: "การแข่งขันเครื่องร่อนแบบเดินตาม ป.1-ป.3",                          type: "ทีม 2 คน" },
+    { name: "การแข่งขันเครื่องร่อน ประเภทร่อนนานปล่อยด้วยมือ ป.4-ป.6",          type: "ทีม 2 คน" },
+    { name: "การแข่งขันเครื่องบินพลังยาง ประเภทบินนานปล่อยอิสระ ม.1-ม.3",       type: "ทีม 2 คน" },
+  ]],
+];
+
+// รายการกิจกรรมทั้งหมดแบบแบน พร้อมรหัส เช่น "3-2" = หมวดที่ 3 รายการที่ 2
+const ACTIVITIES = [];
+CATEGORIES.forEach(([categoryName, items], categoryIndex) => {
+  items.forEach((item, itemIndex) => {
+    ACTIVITIES.push({
+      code: `${categoryIndex + 1}-${itemIndex + 1}`,
+      category: categoryName,
+      name: item.name,
+      type: item.type,
+    });
+  });
+});
+
+
+/* ============================================================
+   3) ฟังก์ชันช่วยเหลือ
+   ============================================================ */
+
+const $ = id => document.getElementById(id);
+
+function showMessage(text) {
+  $("msg").textContent = text || "";
+}
+
+// ป้องกันตัวอักษรพิเศษใน HTML
+function escapeHtml(value) {
+  const map = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" };
+  return String(value ?? "").replace(/[&<>"]/g, ch => map[ch]);
+}
+
+// สีหัวหมวด (วนซ้ำทุก 8 หมวด)
+function categoryColor(categoryName) {
+  const index = CATEGORIES.findIndex(cat => cat[0] === categoryName);
+  return `var(--c${index % 8})`;
+}
+
+// เรียก Supabase REST API
+async function callApi(path, options = {}) {
+  const response = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+    headers: HEADERS,
+    ...options,
+  });
+  if (!response.ok) throw new Error(await response.text());
+
+  const text = await response.text();
+  return text ? JSON.parse(text) : [];
+}
+
+const HEADERS = {
   "apikey": SUPABASE_KEY,
   "Authorization": "Bearer " + SUPABASE_KEY,
-  "Content-Type": "application/json"
+  "Content-Type": "application/json",
 };
 
-const api=(p,o={})=>fetch(SUPABASE_URL+"/rest/v1/"+p,{headers:H,...o}).then(async r=>{if(!r.ok)throw new Error(await r.text());const t=await r.text();return t?JSON.parse(t):[]});
-const $=id=>document.getElementById(id), msg=t=>$("msg").textContent=t||"";
-const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-
-$("s1").innerHTML='<option value="">-- เลือกโรงเรียน --</option>'+SCHOOLS.map(s=>`<option>${esc(s)}</option>`).join("");
-$("s2").innerHTML='<option value="">ทุกโรงเรียน</option>'+SCHOOLS.map(s=>`<option>${esc(s)}</option>`).join("");
-
-// เติมรายชื่อโรงเรียนในตัวเลือกหน้าสรุปรายโรงเรียนและหน้าแอดมิน
-const schoolOptions = SCHOOLS.map(s=>`<option value="${esc(s)}">${esc(s)}</option>`).join("");
-$("s3").innerHTML = '<option value="">-- เลือกโรงเรียน --</option>' + schoolOptions;
-$("adminSchool").innerHTML = '<option value="">-- เลือกโรงเรียน --</option>' + schoolOptions;
-
-function tab(n){
-  [1,2,3,4].forEach(i=>$("p"+i).classList.toggle("hide",n!==i));
-  [1,2,3].forEach(i=>$("n"+i).classList.toggle("on",n===i));
-  msg("");
-  if(n===2) loadSummary();
-  if(n===3 && $("s3").value) loadSchoolSummary();
-}
-function count(){$("cnt").textContent=document.querySelectorAll("#list input:checked").length}
-
-let saved={};
-async function loadForm(){
-  const s=$("s1").value;
-  if(!s){$("list").innerHTML="";$("bar").classList.add("hide");return}
-  msg("กำลังโหลด...");
-  try{
-    const rows=await api("registrations?select=activity_code&school=eq."+encodeURIComponent(s));
-    saved={};rows.forEach(r=>saved[r.activity_code]=1);
-    let h="";
-    CATS.forEach(([c],ci)=>{
-      const it=ACTS.filter(x=>x.cat===c);
-      h+=`<div class="cat"><h3 style="background:var(--c${ci%8})">${esc(c)}<span>${it.length}</span></h3>`;
-      it.forEach(x=>{h+=`<label class="it"><input type="checkbox" value="${x.code}" ${saved[x.code]?"checked":""} onchange="count()"><span>${esc(x.name)}<span class="tg ${x.type==="เดี่ยว"?"":"t"}">${esc(x.type)}</span></span></label>`});
-      h+="</div>";
-    });
-    $("list").innerHTML=h;$("bar").classList.remove("hide");count();msg("");
-  }catch(e){msg("โหลดไม่สำเร็จ: "+e.message)}
+// สร้าง HTML การ์ดกิจกรรมแบบสั้น
+function activityCardHtml(activity) {
+  return `
+    <div class="activity-card">
+      <b>${escapeHtml(activity.name)}</b>
+      <div style="color:#64748b;font-size:.85rem">${escapeHtml(activity.type)}</div>
+    </div>`;
 }
 
-/* ===== บันทึกข้อมูลลง Supabase ===== */
-async function saveAll(){
-  const school = $("s1").value;
-  if(!school){ msg("กรุณาเลือกโรงเรียนก่อนบันทึก"); return; }
+// สร้าง HTML หัวหมวด
+function categoryHeaderHtml(categoryName) {
+  return `<div class="cat"><h3 style="background:${categoryColor(categoryName)}">${escapeHtml(categoryName)}</h3>`;
+}
 
-  const button = document.querySelector('#bar button');
-  if(button) button.disabled = true;
 
-  const selected = new Set(
-    [...document.querySelectorAll('#list input[type="checkbox"]:checked')].map(input => input.value)
-  );
-  const toSave = ACTS
-    .filter(activity => selected.has(activity.code))
-    .map(activity => ({
-      school,
-      activity_code: activity.code,
-      category: activity.cat,
-      activity_name: activity.name,
-      type: activity.type
-    }));
-  const toDelete = Object.keys(saved).filter(code => !selected.has(code));
+/* ============================================================
+   4) เข้าสู่ระบบ / ออกจากระบบ / สลับหน้า
+   ============================================================ */
 
-  msg("กำลังบันทึกข้อมูล...");
+let currentSchool = null;   // โรงเรียนที่ login อยู่
+let savedCodes = {};        // รหัสกิจกรรมที่เคยบันทึกไว้แล้ว { "1-2": 1, ... }
+
+function login() {
+  const entered = $("codeInput").value.trim();
+  const school = SCHOOLS.find(s => s.code === entered);
+
+  if (!school) {
+    showMessage("รหัสไม่ถูกต้อง");
+    return;
+  }
+  sessionStorage.setItem("schoolCode", school.code);
+  enterSystem(school);
+}
+
+function enterSystem(school) {
+  currentSchool = school;
+  showMessage("");
+  $("codeInput").value = "";
+  $("pageLogin").classList.add("hide");
+  $("nav").classList.remove("hide");
+  $("headerSub").textContent = school.name;
+  showTab(1);
+}
+
+function logout() {
+  sessionStorage.removeItem("schoolCode");
+  currentSchool = null;
+
+  ["page1", "page2", "page3", "nav", "saveBar"].forEach(id => $(id).classList.add("hide"));
+  $("pageLogin").classList.remove("hide");
+  $("headerSub").textContent = DEFAULT_SUBTITLE;
+  showMessage("");
+}
+
+// สลับหน้า: 1 = สมัคร, 2 = สรุปของโรงเรียน, 3 = สรุปรวม
+function showTab(tabNumber) {
+  if (!currentSchool) return;
+
+  [1, 2, 3].forEach(n => {
+    $("page" + n).classList.toggle("hide", n !== tabNumber);
+    $("nav" + n).classList.toggle("on", n === tabNumber);
+  });
+  $("saveBar").classList.toggle("hide", tabNumber !== 1);
+  showMessage("");
+
+  if (tabNumber === 1) loadForm();
+  if (tabNumber === 2) loadMySummary();
+  if (tabNumber === 3) loadAllSummary();
+}
+
+
+/* ============================================================
+   5) หน้าสมัครกิจกรรม (เฉพาะโรงเรียนตัวเอง)
+   ============================================================ */
+
+function updateSelectedCount() {
+  $("selectedCount").textContent = document.querySelectorAll("#formList input:checked").length;
+}
+
+async function loadForm() {
+  showMessage("กำลังโหลด...");
   try {
-    // เพิ่มหรือปรับปรุงรายการที่เลือก โดยอาศัย unique constraint school + activity_code
-    if(toSave.length){
-      await api("registrations?on_conflict=school,activity_code", {
+    // ดึงรายการที่โรงเรียนนี้เคยสมัครไว้
+    const rows = await callApi(
+      "registrations?select=activity_code&school=eq." + encodeURIComponent(currentSchool.name)
+    );
+    savedCodes = {};
+    rows.forEach(row => { savedCodes[row.activity_code] = 1; });
+
+    // วาดฟอร์มแยกตามหมวด
+    let html = "";
+    CATEGORIES.forEach(([categoryName], categoryIndex) => {
+      const items = ACTIVITIES.filter(a => a.category === categoryName);
+
+      html += `<div class="cat">
+        <h3 style="background:var(--c${categoryIndex % 8})">
+          ${escapeHtml(categoryName)}<span>${items.length}</span>
+        </h3>`;
+
+      items.forEach(activity => {
+        const checked = savedCodes[activity.code] ? "checked" : "";
+        const tagClass = activity.type === "เดี่ยว" ? "tag" : "tag team";
+        html += `
+          <label class="item">
+            <input type="checkbox" value="${activity.code}" ${checked} onchange="updateSelectedCount()">
+            <span>${escapeHtml(activity.name)}
+              <span class="${tagClass}">${escapeHtml(activity.type)}</span>
+            </span>
+          </label>`;
+      });
+      html += "</div>";
+    });
+
+    $("formList").innerHTML = html;
+    updateSelectedCount();
+    showMessage("");
+  } catch (error) {
+    showMessage("โหลดไม่สำเร็จ: " + error.message);
+  }
+}
+
+async function saveRegistrations() {
+  if (!currentSchool) return;
+
+  const schoolName = currentSchool.name;
+  const saveButton = document.querySelector("#saveBar button");
+  saveButton.disabled = true;
+
+  // รหัสกิจกรรมที่ติ๊กอยู่ตอนนี้
+  const selectedCodes = new Set(
+    [...document.querySelectorAll("#formList input:checked")].map(input => input.value)
+  );
+
+  // รายการที่ต้องเพิ่ม/อัปเดต
+  const rowsToSave = ACTIVITIES
+    .filter(activity => selectedCodes.has(activity.code))
+    .map(activity => ({
+      school: schoolName,
+      activity_code: activity.code,
+      category: activity.category,
+      activity_name: activity.name,
+      type: activity.type,
+    }));
+
+  // รายการที่เคยสมัครแต่ถูกติ๊กออก → ต้องลบ
+  const codesToDelete = Object.keys(savedCodes).filter(code => !selectedCodes.has(code));
+
+  showMessage("กำลังบันทึกข้อมูล...");
+  try {
+    if (rowsToSave.length) {
+      await callApi("registrations?on_conflict=school,activity_code", {
         method: "POST",
-        headers: { ...H, "Prefer": "resolution=merge-duplicates" },
-        body: JSON.stringify(toSave)
+        headers: { ...HEADERS, "Prefer": "resolution=merge-duplicates" },
+        body: JSON.stringify(rowsToSave),
       });
     }
 
-    // ลบรายการที่เคยบันทึกไว้ แต่ผู้ใช้ยกเลิกการเลือก
-    for(const code of toDelete){
-      await api(
-        "registrations?school=eq." + encodeURIComponent(school) + "&activity_code=eq." + encodeURIComponent(code),
-        { method: "DELETE", headers: { ...H, "Prefer": "return=minimal" } }
+    for (const code of codesToDelete) {
+      await callApi(
+        "registrations?school=eq." + encodeURIComponent(schoolName) +
+        "&activity_code=eq." + encodeURIComponent(code),
+        { method: "DELETE", headers: { ...HEADERS, "Prefer": "return=minimal" } }
       );
     }
 
-    saved = {};
-    toSave.forEach(item => { saved[item.activity_code] = 1; });
-    count();
-    msg(`บันทึกสำเร็จ ${toSave.length} กิจกรรม`);
-  } catch(error) {
-    console.error("Save error:", error);
-    msg("บันทึกไม่สำเร็จ: " + (error.message || "โปรดตรวจสอบการเชื่อมต่อและสิทธิ์ Supabase"));
+    savedCodes = {};
+    rowsToSave.forEach(row => { savedCodes[row.activity_code] = 1; });
+    showMessage(`บันทึกสำเร็จ ${rowsToSave.length} กิจกรรม`);
+  } catch (error) {
+    showMessage("บันทึกไม่สำเร็จ: " + (error.message || "ตรวจสอบการเชื่อมต่อ"));
   } finally {
-    if(button) button.disabled = false;
+    saveButton.disabled = false;
   }
 }
 
-/* ===== สรุปกิจกรรมทั้งหมด แยกกิจกรรมที่ไม่มีผู้สมัครไว้ด้านล่าง ===== */
-async function loadSummary(){
-  const school = $("s2").value;
-  $("sum").innerHTML = "";
-  msg("กำลังโหลดข้อมูลสรุป...");
+
+/* ============================================================
+   6) หน้าสรุปของโรงเรียนตัวเอง
+   ============================================================ */
+
+async function loadMySummary() {
+  showMessage("กำลังโหลด...");
   try {
-    let endpoint = "registrations?select=school,activity_code,category,activity_name,type&order=school.asc";
-    if(school) endpoint += "&school=eq." + encodeURIComponent(school);
-    const rows = await api(endpoint);
-    const schoolSet = new Set(rows.map(row => row.school));
+    const rows = await callApi(
+      "registrations?select=activity_code&school=eq." + encodeURIComponent(currentSchool.name)
+    );
+    const myCodes = new Set(rows.map(row => row.activity_code));
+
+    let html = `
+      <div class="stat-row">
+        <div><b>${myCodes.size}</b>กิจกรรมที่สมัคร</div>
+        <div><b style="font-size:1rem">${escapeHtml(currentSchool.name)}</b>โรงเรียน</div>
+      </div>`;
+
+    if (myCodes.size === 0) {
+      html += '<p class="empty-card">โรงเรียนนี้ยังไม่ได้สมัครกิจกรรม</p>';
+    }
+
+    // แสดงเฉพาะกิจกรรมที่สมัคร จัดกลุ่มตามหมวด
+    let currentCategory = "";
+    let categoryOpen = false;
+    ACTIVITIES.forEach(activity => {
+      if (!myCodes.has(activity.code)) return;
+
+      if (activity.category !== currentCategory) {
+        if (categoryOpen) html += "</div>";
+        currentCategory = activity.category;
+        categoryOpen = true;
+        html += categoryHeaderHtml(currentCategory);
+      }
+      html += activityCardHtml(activity);
+    });
+    if (categoryOpen) html += "</div>";
+
+    $("mySummary").innerHTML = html;
+    showMessage("");
+  } catch (error) {
+    showMessage("โหลดไม่สำเร็จ: " + error.message);
+  }
+}
+
+
+/* ============================================================
+   7) หน้าสรุปรวมทุกโรงเรียน
+      - กิจกรรมที่มีผู้สมัคร (พร้อมรายชื่อโรงเรียน)
+      - กิจกรรมที่ไม่มีผู้สมัคร (แยกไว้ด้านล่าง)
+   ============================================================ */
+
+async function loadAllSummary() {
+  showMessage("กำลังโหลดข้อมูลสรุป...");
+  try {
+    const rows = await callApi("registrations?select=school,activity_code");
+
+    // จัดกลุ่ม: รหัสกิจกรรม → ชุดชื่อโรงเรียนที่สมัคร
     const schoolsByActivity = new Map();
     rows.forEach(row => {
-      if(!schoolsByActivity.has(row.activity_code)) schoolsByActivity.set(row.activity_code, []);
-      schoolsByActivity.get(row.activity_code).push(row.school);
-    });
-
-    let html = `<div class="big"><div><b>${rows.length}</b>รายการสมัครทั้งหมด</div><div><b>${schoolSet.size}</b>โรงเรียนที่สมัคร</div></div>`;
-    if(!school){
-      const counts = SCHOOLS.map(name => ({name, count:new Set(rows.filter(r=>r.school===name).map(r=>r.activity_code)).size}));
-      const maxCount = Math.max(1, ...counts.map(x=>x.count));
-      html += '<div class="chart-wrap"><h3 class="section-title" style="margin-top:0">แผนภูมิแท่ง: จำนวนกิจกรรมที่แต่ละโรงเรียนสมัคร</h3>';
-      html += counts.map(x=>`<div class="chart-row"><div class="chart-label">${esc(x.name)}</div><div class="chart-track"><div class="chart-bar" style="width:${(x.count/maxCount)*100}%"></div></div><div class="chart-value">${x.count}</div></div>`).join('');
-      html += '<div style="font-size:.8rem;color:#64748b;margin-top:8px">หน่วย: จำนวนกิจกรรมที่สมัคร (นับรหัสกิจกรรมไม่ซ้ำต่อโรงเรียน)</div></div>';
-    }
-    html += '<h3 class="section-title">รายการกิจกรรมที่มีโรงเรียนสมัคร</h3>';
-    let currentCategory = "";
-    let openCategory = false;
-    let activeCount = 0;
-    const emptyActivities = [];
-
-    ACTS.forEach(activity => {
-      const names = [...new Set(schoolsByActivity.get(activity.code) || [])];
-      if(names.length === 0){ emptyActivities.push(activity); return; }
-      if(activity.cat !== currentCategory){
-        if(openCategory) html += '</div>';
-        currentCategory = activity.cat;
-        openCategory = true;
-        html += `<div class="cat"><h3 style="background:var(--c${(CATS.findIndex(c=>c[0]===activity.cat))%8})">${esc(currentCategory)}</h3>`;
+      if (!schoolsByActivity.has(row.activity_code)) {
+        schoolsByActivity.set(row.activity_code, new Set());
       }
+      schoolsByActivity.get(row.activity_code).add(row.school);
+    });
+
+    const schoolsThatApplied = new Set(rows.map(row => row.school));
+
+    let html = buildStatsHtml(rows.length, schoolsThatApplied.size);
+    html += buildChartHtml(rows);
+
+    // --- ส่วนที่ 1: กิจกรรมที่มีผู้สมัคร ---
+    html += '<h3 class="section-title">กิจกรรมที่มีโรงเรียนสมัคร</h3>';
+
+    const emptyActivities = [];
+    let currentCategory = "";
+    let categoryOpen = false;
+    let activeCount = 0;
+
+    ACTIVITIES.forEach(activity => {
+      const schoolNames = [...(schoolsByActivity.get(activity.code) || [])];
+
+      if (schoolNames.length === 0) {
+        emptyActivities.push(activity);
+        return;
+      }
+
+      if (activity.category !== currentCategory) {
+        if (categoryOpen) html += "</div>";
+        currentCategory = activity.category;
+        categoryOpen = true;
+        html += categoryHeaderHtml(currentCategory);
+      }
+
       activeCount++;
-      html += `<div class="activity-card"><b>${esc(activity.name)}</b>
-        <div style="color:#64748b;font-size:.85rem;margin:4px 0 7px">${esc(activity.type)} · สมัคร ${names.length} โรงเรียน</div>
-        <div style="display:flex;flex-wrap:wrap;gap:6px">${names.map(name=>`<span style="background:#eef2ff;color:#3730a3;border-radius:20px;padding:5px 10px;font-size:.88rem">${esc(name)}</span>`).join('')}</div>
-      </div>`;
+      html += `
+        <div class="activity-card">
+          <b>${escapeHtml(activity.name)}</b>
+          <div style="color:#64748b;font-size:.85rem;margin:4px 0 7px">
+            ${escapeHtml(activity.type)} · สมัคร ${schoolNames.length} โรงเรียน
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px">
+            ${schoolNames.map(name => `<span class="school-chip">${escapeHtml(name)}</span>`).join("")}
+          </div>
+        </div>`;
     });
-    if(openCategory) html += '</div>';
-    if(!activeCount) html += '<p>ยังไม่มีโรงเรียนสมัครกิจกรรมใด</p>';
+    if (categoryOpen) html += "</div>";
+    if (activeCount === 0) html += "<p>ยังไม่มีโรงเรียนสมัครกิจกรรมใด</p>";
 
-    html += `<h3 class="section-title" style="color:#b91c1c">รายการที่ไม่มีโรงเรียนรับสมัคร (${emptyActivities.length} รายการ)</h3>`;
-    if(emptyActivities.length){
-      html += '<div style="background:#fff;border-radius:14px;padding:10px;border:1px solid #fecaca">';
-      let emptyCat = "";
-      emptyActivities.forEach(activity=>{
-        if(activity.cat !== emptyCat){
-          emptyCat = activity.cat;
-          html += `<h4 style="color:#991b1b;margin:10px 0 5px">${esc(emptyCat)}</h4>`;
-        }
-        html += `<div class="empty-card"><b>${esc(activity.name)}</b><div style="font-size:.85rem">${esc(activity.type)} · ไม่มีผู้สมัคร</div></div>`;
-      });
-      html += '</div>';
-    } else html += '<p style="color:#166534">ทุกกิจกรรมมีโรงเรียนสมัครแล้ว</p>';
+    // --- ส่วนที่ 2: กิจกรรมที่ไม่มีผู้สมัคร ---
+    html += buildEmptyActivitiesHtml(emptyActivities);
 
-    $("sum").innerHTML = html;
-    msg("");
-  } catch(error) {
-    console.error("Summary error:", error);
-    msg("โหลดสรุปไม่สำเร็จ: " + (error.message || "โปรดตรวจสอบการเชื่อมต่อ Supabase"));
+    $("allSummary").innerHTML = html;
+    showMessage("");
+  } catch (error) {
+    showMessage("โหลดสรุปไม่สำเร็จ: " + error.message);
   }
 }
 
-/* ===== สรุปแยกรายโรงเรียน ===== */
-async function loadSchoolSummary(){
-  const school = $("s3").value;
-  $("schoolSum").innerHTML = "";
-  if(!school) return;
-  msg("กำลังโหลดข้อมูลของโรงเรียน...");
-  try{
-    const rows = await api("registrations?select=activity_code,category,activity_name,type&school=eq."+encodeURIComponent(school));
-    const codes = new Set(rows.map(r=>r.activity_code));
-    let html = `<div class="big"><div><b>${rows.length}</b>กิจกรรมที่สมัคร</div><div><b>${esc(school)}</b>โรงเรียน</div></div>`;
-    if(!rows.length){
-      html += '<p class="empty-card">โรงเรียนนี้ยังไม่ได้สมัครกิจกรรม</p>';
-    }else{
-      let currentCategory="", open=false;
-      ACTS.forEach(activity=>{
-        if(!codes.has(activity.code)) return;
-        if(activity.cat!==currentCategory){
-          if(open) html+='</div>';
-          currentCategory=activity.cat;open=true;
-          html+=`<div class="cat"><h3>${esc(currentCategory)}</h3>`;
-        }
-        html+=`<div class="activity-card"><b>${esc(activity.name)}</b><div style="color:#64748b;font-size:.85rem">${esc(activity.type)}</div></div>`;
-      });
-      if(open) html+='</div>';
+// กล่องตัวเลขสรุปด้านบน
+function buildStatsHtml(totalRegistrations, schoolCount) {
+  return `
+    <div class="stat-row">
+      <div><b>${totalRegistrations}</b>รายการสมัครทั้งหมด</div>
+      <div><b>${schoolCount}/${SCHOOLS.length}</b>โรงเรียนที่สมัครแล้ว</div>
+    </div>`;
+}
+
+// แผนภูมิแท่ง: จำนวนกิจกรรมที่แต่ละโรงเรียนสมัคร
+function buildChartHtml(rows) {
+  const counts = SCHOOLS.map(school => ({
+    name: school.name,
+    count: rows.filter(row => row.school === school.name).length,
+  }));
+  const maxCount = Math.max(1, ...counts.map(item => item.count));
+
+  const barsHtml = counts.map(item => `
+    <div class="chart-row">
+      <div>${escapeHtml(item.name)}</div>
+      <div class="chart-track">
+        <div class="chart-bar" style="width:${(item.count / maxCount) * 100}%"></div>
+      </div>
+      <b>${item.count}</b>
+    </div>`).join("");
+
+  return `
+    <div class="chart-box">
+      <h3 class="section-title" style="margin-top:0">จำนวนกิจกรรมที่แต่ละโรงเรียนสมัคร</h3>
+      ${barsHtml}
+    </div>`;
+}
+
+// รายการกิจกรรมที่ไม่มีผู้สมัคร จัดกลุ่มตามหมวด
+function buildEmptyActivitiesHtml(emptyActivities) {
+  let html = `<h3 class="section-title" style="color:#b91c1c">
+                กิจกรรมที่ไม่มีผู้สมัคร (${emptyActivities.length} รายการ)</h3>`;
+
+  if (emptyActivities.length === 0) {
+    return html + '<p style="color:#166534">ทุกกิจกรรมมีโรงเรียนสมัครแล้ว</p>';
+  }
+
+  let currentCategory = "";
+  emptyActivities.forEach(activity => {
+    if (activity.category !== currentCategory) {
+      currentCategory = activity.category;
+      html += `<h4 style="color:#991b1b;margin:10px 0 5px">${escapeHtml(currentCategory)}</h4>`;
     }
-    $("schoolSum").innerHTML=html;
-    msg("");
-  }catch(error){
-    console.error(error);msg("โหลดข้อมูลโรงเรียนไม่สำเร็จ: "+(error.message||"ตรวจสอบ Supabase"));
-  }
+    html += `
+      <div class="empty-card">
+        <b>${escapeHtml(activity.name)}</b>
+        <div style="font-size:.85rem">${escapeHtml(activity.type)}</div>
+      </div>`;
+  });
+  return html;
 }
 
-/* พิมพ์เฉพาะรายงานที่กำลังเลือก โดยผู้ใช้สามารถเลือก Save as PDF ในหน้าต่างพิมพ์ */
-function printReport(page){
-  if(page===3 && !$("s3").value){
-    alert("กรุณาเลือกโรงเรียนก่อนพิมพ์รายงาน");
-    $("s3").focus();
-    return;
-  }
-  document.body.classList.remove("print-p2","print-p3");
-  document.body.classList.add(page===2?"print-p2":"print-p3");
-  const cleanup=()=>document.body.classList.remove("print-p2","print-p3");
-  window.addEventListener("afterprint",cleanup,{once:true});
-  // เรียกพิมพ์หลัง browser ใช้ print stylesheet แล้ว
-  requestAnimationFrame(()=>window.print());
-  setTimeout(cleanup,3000);
-}
 
-/* ===== หน้าแอดมิน =====
-   รหัสผ่านใน JavaScript ฝั่งผู้ใช้เป็นเพียงการกั้นหน้าเบื้องต้น ไม่ใช่ระบบรักษาความปลอดภัยจริง */
-function openAdmin(){
-  const password = prompt("กรุณากรอกรหัสผ่านเพื่อเข้าสู่หน้า Admin");
-  if(password !== "m301"){
-    if(password !== null) alert("รหัสผ่านไม่ถูกต้อง");
-    return;
-  }
-  tab(4);
-  alert("เข้าสู่หน้า Admin แล้ว");
-}
+/* ============================================================
+   8) เริ่มต้น: ถ้ายัง login ค้างใน session เดิม ให้เข้าระบบอัตโนมัติ
+   ============================================================ */
 
-async function deleteSelectedSchool(){
-  const school=$("adminSchool").value;
-  if(!school){alert("กรุณาเลือกโรงเรียนก่อน");return;}
-  if(!confirm(`ยืนยันลบข้อมูลการสมัครทั้งหมดของ ${school} ใช่หรือไม่? การลบนี้ไม่สามารถย้อนกลับได้`)) return;
-  msg("กำลังลบข้อมูล...");
-  try{
-    await api("registrations?school=eq."+encodeURIComponent(school),{
-      method:"DELETE",headers:{...H,"Prefer":"return=minimal"}
-    });
-    alert("ลบข้อมูลการสมัครของโรงเรียนที่เลือกเรียบร้อยแล้ว");
-    if($("s1").value===school){saved={};$("list").innerHTML="";$("bar").classList.add("hide");}
-    if(!$("p2").classList.contains("hide")) loadSummary();
-    if(!$("p3").classList.contains("hide") && $("s3").value) loadSchoolSummary();
-    msg("ลบข้อมูลสำเร็จ");
-  }catch(error){
-    console.error(error);alert("ลบข้อมูลไม่สำเร็จ: "+(error.message||"ตรวจสอบสิทธิ์ Supabase"));msg("ลบข้อมูลไม่สำเร็จ");
-  }
+const rememberedCode = sessionStorage.getItem("schoolCode");
+if (rememberedCode) {
+  const rememberedSchool = SCHOOLS.find(s => s.code === rememberedCode);
+  if (rememberedSchool) enterSystem(rememberedSchool);
 }
-
-async function deleteAllSchools(){
-  if(!confirm("ยืนยันลบข้อมูลการสมัครของทุกโรงเรียนทั้งหมดใช่หรือไม่?")) return;
-  if(!confirm("ยืนยันครั้งสุดท้าย: ข้อมูลการสมัครทุกโรงเรียนจะถูกลบและไม่สามารถกู้คืนได้")) return;
-  msg("กำลังลบข้อมูลทั้งหมด...");
-  try{
-    await api("registrations?school=not.is.null",{
-      method:"DELETE",headers:{...H,"Prefer":"return=minimal"}
-    });
-    alert("ลบข้อมูลการสมัครทุกโรงเรียนเรียบร้อยแล้ว");
-    saved={};$("list").innerHTML="";$("bar").classList.add("hide");
-    $("sum").innerHTML="";$("schoolSum").innerHTML="";
-    msg("ลบข้อมูลทั้งหมดสำเร็จ");
-  }catch(error){
-    console.error(error);alert("ลบข้อมูลทั้งหมดไม่สำเร็จ: "+(error.message||"ตรวจสอบสิทธิ์ Supabase"));msg("ลบข้อมูลไม่สำเร็จ");
-  }
-}
-
-// เริ่มต้นแสดงจำนวนกิจกรรมที่เลือก
-count();
 </script>
 </body>
 </html>
