@@ -29,6 +29,9 @@
   input, button { font:inherit; padding:10px; border:2px solid #c7c2f5; border-radius:12px; }
   button { color:#fff; font-weight:600; cursor:pointer; background:linear-gradient(135deg,#6366f1,#ec4899); border:0; }
   button:disabled { opacity:.6; }
+  button.gray   { color:#374151; background:#e5e7eb; }
+  button.danger { background:#dc2626; }
+  .login select { width:100%; padding:10px; margin-top:8px; font:inherit; border:2px solid #c7c2f5; border-radius:12px; }
 
   .login { margin-top:24px; padding:24px; text-align:center; }
   .login input, .login button { width:100%; }
@@ -85,6 +88,16 @@
     <input id="codeInput" type="text" inputmode="numeric" autocomplete="off" placeholder="รหัส 4 หลัก" onkeydown="if(event.key==='Enter')login()">
     <button type="button" onclick="login()">เข้าสู่ระบบ</button>
     <div class="schools"><b>โรงเรียนในเครือข่าย</b><ol id="schoolList"></ol></div>
+    <button type="button" class="gray" onclick="openAdmin()">Admin</button>
+  </div>
+
+  <div id="pageAdmin" class="box login hide">
+    <p><b>Admin: จัดการข้อมูลการสมัคร</b></p>
+    <select id="adminSchool"></select>
+    <button type="button" class="danger" onclick="deleteSchool()">ลบข้อมูลโรงเรียนที่เลือก</button>
+    <button type="button" class="danger" onclick="deleteAll()">ลบข้อมูลทั้งหมดทุกโรงเรียน</button>
+    <button type="button" class="gray" onclick="closeAdmin()">กลับหน้าแรก</button>
+    <p style="font-size:.85rem;color:#991b1b">คำเตือน: การลบไม่สามารถย้อนกลับได้</p>
   </div>
 
   <div id="page1" class="hide"></div>
@@ -361,7 +374,44 @@ async function loadAllSummary() {
     + groupedHtml(withoutApplicants, a => `<div class="card empty"><b>${esc(a.name)}</b><small>${esc(a.type)}</small></div>`);
 }
 
-/* ===== 8. เริ่มต้น ===== */
+/* ===== 8. Admin (รหัส m304) ===== */
+const ADMIN_CODE = "m304";
+
+function openAdmin() {
+  const code = prompt("กรุณากรอกรหัส Admin");
+  if (code === null) return;
+  if (code !== ADMIN_CODE) return say("รหัส Admin ไม่ถูกต้อง");
+  say("");
+  $("pageLogin").classList.add("hide");
+  $("pageAdmin").classList.remove("hide");
+}
+
+function closeAdmin() {
+  $("pageAdmin").classList.add("hide");
+  $("pageLogin").classList.remove("hide");
+  say("");
+}
+
+async function deleteSchool() {
+  const name = $("adminSchool").value;
+  if (!confirm(`ลบข้อมูลการสมัครทั้งหมดของ ${name} ใช่หรือไม่?`)) return;
+  try {
+    await api("registrations?school=eq." + encodeURIComponent(name), { method: "DELETE", headers: { ...HEADERS, Prefer: "return=minimal" } });
+    say("ลบข้อมูลของ " + name + " แล้ว");
+  } catch (e) { say("ลบไม่สำเร็จ: " + e.message); }
+}
+
+async function deleteAll() {
+  if (!confirm("ลบข้อมูลการสมัครของทุกโรงเรียนใช่หรือไม่?")) return;
+  if (!confirm("ยืนยันครั้งสุดท้าย: ข้อมูลทั้งหมดจะถูกลบและกู้คืนไม่ได้")) return;
+  try {
+    await api("registrations?school=not.is.null", { method: "DELETE", headers: { ...HEADERS, Prefer: "return=minimal" } });
+    say("ลบข้อมูลทั้งหมดแล้ว");
+  } catch (e) { say("ลบไม่สำเร็จ: " + e.message); }
+}
+
+/* ===== 9. เริ่มต้น ===== */
+$("adminSchool").innerHTML = SCHOOLS.map(s => `<option>${esc(s.name)}</option>`).join("");
 $("schoolList").innerHTML = SCHOOLS.map(s => `<li>${esc(s.name)}</li>`).join("");
 </script>
 </body>
